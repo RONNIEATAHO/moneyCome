@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Users - Admin Panel</title>
+    <link rel="stylesheet" href="../../public/css/styles.css">
+    <style>
+        .admin-container { display: grid; grid-template-columns: 250px 1fr; }
+        .admin-sidebar { background-color: var(--primary-dark); color: var(--primary-light); padding: 2rem 0; position: fixed; left: 0; top: 0; width: 250px; height: 100vh; overflow-y: auto; }
+        .admin-sidebar a { display: block; padding: 1rem 1.5rem; color: var(--primary-light); text-decoration: none; transition: all 0.3s ease; border-left: 4px solid transparent; }
+        .admin-sidebar a:hover, .admin-sidebar a.active { background-color: var(--primary-gold); color: var(--primary-dark); border-left-color: var(--primary-dark); font-weight: 600; }
+        .admin-content { margin-left: 250px; padding: 2rem; background-color: var(--primary-light); }
+        table { width: 100%; border-collapse: collapse; background-color: white; }
+        th { background-color: var(--primary-gold); color: var(--primary-dark); padding: 1rem; text-align: left; font-weight: 600; }
+        td { padding: 1rem; border-bottom: 1px solid var(--border-color); }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-sidebar">
+            <div style="padding: 1.5rem; border-bottom: 1px solid #3c3c3c; margin-bottom: 1rem;">
+                <img src="../../public/images/sv.jpeg" alt="Suvan Ventures" style="height: 60px; margin-bottom: 1rem;">
+                <h3 style="color: var(--primary-gold); margin: 0;">Admin Panel</h3>
+            </div>
+            <nav>
+                <a href="admin-dashboard.html">📊 Dashboard</a>
+                <a href="admin-products.html">📦 Products</a>
+                <a href="admin-services.html">⚙️ Services</a>
+                <a href="admin-inquiries.html">💬 Inquiries</a>
+                <a href="admin-appointments.html">📅 Appointments</a>
+                <a href="admin-orders.html">📋 Orders</a>
+                <a href="admin-users.html" class="active">👥 Users</a>
+                <a href="#" onclick="logoutAndRedirect()">🚪 Logout</a>
+            </nav>
+        </div>
+
+        <div class="admin-content">
+            <h1>Manage Users</h1>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Joined Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTable">
+                    <tr><td colspan="8" class="text-center">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="../../public/js/common.js"></script>
+    <script>
+        async function checkAdminAccess() {
+            const auth = await checkAuth();
+            if (!auth.data.logged_in || auth.data.user_role !== 'system_admin') {
+                window.location.href = '../../public/login.html';
+            }
+        }
+
+        checkAdminAccess();
+    </script>
+</body>
+</html>

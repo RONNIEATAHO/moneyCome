@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products - Suvan Ventures</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-logo"><img src="images/sv.jpeg" alt="Suvan Ventures" style="height: 50px;"></div>
+            <ul class="navbar-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="products.html" class="active">Products</a></li>
+                <li><a href="services.html">Services</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+            <div class="navbar-auth">
+                <a href="cart.html" class="navbar-icon" title="Cart">🛒</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="hero">
+        <div class="container">
+            <h1>Our Products</h1>
+            <p>Premium electronic gadgets and equipment for your business needs</p>
+        </div>
+    </section>
+
+    <!-- Filters Section -->
+    <section class="section">
+        <div class="container">
+            <div style="display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap;">
+                <input type="text" id="searchInput" placeholder="Search products..." style="padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 4px; flex: 1; min-width: 200px;">
+                <select id="categoryFilter" style="padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 4px;">
+                    <option value="">All Categories</option>
+                    <option value="Electronics">Electronics</option>
+                    <option value="Network Equipment">Network Equipment</option>
+                    <option value="Security">Security</option>
+                    <option value="Accessories">Accessories</option>
+                </select>
+            </div>
+
+            <div id="products-list" class="grid">
+                <!-- Products will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>About Us</h4>
+                    <p>Suvan Ventures Company Limited is a leading technology solutions provider.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="services.html">Services</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Suvan Ventures Company Limited. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/common.js"></script>
+    <script>
+        let allProducts = [];
+
+        async function loadProducts() {
+            showLoading('products-list');
+            const result = await getAllProducts();
+            if (result.success && result.data) {
+                allProducts = result.data;
+                displayProducts(allProducts);
+            } else {
+                document.getElementById('products-list').innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No products available.</p>';
+            }
+        }
+
+        function displayProducts(products) {
+            const container = document.getElementById('products-list');
+            container.innerHTML = '';
+            
+            if (products.length === 0) {
+                container.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No products found.</p>';
+                return;
+            }
+
+            products.forEach(product => {
+                const displayPrice = product.discount_price ? 
+                    `<div class="card-price">${formatCurrency(product.discount_price)} <small style="color: #999; text-decoration: line-through;">${formatCurrency(product.price)}</small></div>` :
+                    `<div class="card-price">${formatCurrency(product.price)}</div>`;
+                
+                const productCard = `
+                    <div class="card">
+                        <div class="card-image" style="background-color: var(--primary-light-alt); display: flex; align-items: center; justify-content: center;">
+                            <span style="font-size: 3rem;">📦</span>
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">${product.name}</h3>
+                            <p class="card-text">${product.description.substring(0, 100)}...</p>
+                            ${displayPrice}
+                            <p class="text-muted">Category: ${product.category}</p>
+                            <p class="text-muted">Stock: <span class="badge ${product.stock_quantity > 0 ? 'badge-success' : 'badge-danger'}">${product.stock_quantity}</span></p>
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-primary btn-small" onclick="addProductToCart(${product.id}, '${product.name}', ${product.discount_price || product.price})" ${product.stock_quantity === 0 ? 'disabled' : ''}>Add to Cart</button>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += productCard;
+            });
+        }
+
+        function filterProducts() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const categoryTerm = document.getElementById('categoryFilter').value.toLowerCase();
+
+            const filtered = allProducts.filter(product => {
+                const matchesSearch = product.name.toLowerCase().includes(searchTerm) || 
+                                     product.description.toLowerCase().includes(searchTerm);
+                const matchesCategory = !categoryTerm || product.category.toLowerCase().includes(categoryTerm);
+                return matchesSearch && matchesCategory;
+            });
+
+            displayProducts(filtered);
+        }
+
+        async function addProductToCart(productId, productName, price) {
+            const quantity = prompt('Enter quantity:', '1');
+            if (quantity && quantity > 0) {
+                const result = await addToCart('product', productId, parseInt(quantity), price);
+                if (result.success) {
+                    showAlert(`${productName} added to cart!`, 'success');
+                } else {
+                    showAlert('Please login to add items to cart', 'warning');
+                }
+            }
+        }
+
+        // Event listeners
+        document.getElementById('searchInput').addEventListener('input', filterProducts);
+        document.getElementById('categoryFilter').addEventListener('change', filterProducts);
+
+        // Load products on page load
+        loadProducts();
+    </script>
+</body>
+</html>

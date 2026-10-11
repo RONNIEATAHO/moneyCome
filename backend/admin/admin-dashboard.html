@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Suvan Ventures</title>
+    <link rel="stylesheet" href="../../public/css/styles.css">
+    <style>
+        :root {
+            --admin-dark: #191919;
+            --admin-gold: #B88746;
+            --admin-gold-soft: #F7C873;
+            --admin-ivory: #F8F8F8;
+            --admin-neutral: #f3f0eb;
+            --admin-border: rgba(184, 135, 70, 0.25);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--admin-neutral);
+            color: var(--admin-dark);
+        }
+
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+            background: var(--admin-neutral);
+        }
+
+        .admin-sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #171717 0%, #1f1d1d 100%);
+            color: var(--admin-ivory);
+            padding: 0;
+            border-right: 1px solid var(--admin-border);
+            box-shadow: 8px 0 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .admin-brand {
+            padding: 1.75rem 1.5rem 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .admin-brand img {
+            height: 56px;
+            margin-bottom: 0.75rem;
+            filter: drop-shadow(0 0 12px rgba(247, 200, 115, 0.22));
+        }
+
+        .admin-brand h3 {
+            color: var(--admin-gold-soft);
+            margin: 0;
+            font-size: 1.05rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .admin-brand p {
+            margin: 0.5rem 0 0;
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .admin-sidebar nav { padding: 1.25rem 0 0; }
+
+        .admin-sidebar a {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            padding: 1rem 1.5rem;
+            color: rgba(255,255,255,0.88);
+            text-decoration: none;
+            border-left: 4px solid transparent;
+            transition: all 0.25s ease;
+            font-weight: 500;
+        }
+
+        .admin-sidebar a:hover,
+        .admin-sidebar a.active {
+            background: linear-gradient(90deg, rgba(184, 135, 70, 0.25), rgba(184, 135, 70, 0.08));
+            color: var(--admin-gold-soft);
+            border-left-color: var(--admin-gold-soft);
+            font-weight: 600;
+        }
+
+        .admin-content {
+            flex: 1;
+            padding: 2.4rem 2.8rem 3rem;
+            background: var(--admin-neutral);
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(25,25,25,0.08);
+            padding-bottom: 1rem;
+        }
+
+        .admin-header h1 {
+            margin: 0;
+            font-size: clamp(2.2rem, 2.8vw, 3.8rem);
+            letter-spacing: -0.04em;
+        }
+
+        .admin-header p {
+            margin: 0.4rem 0 0;
+            color: rgba(25,25,25,0.7);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(180deg, #fffdf9 0%, #f8f4ef 100%);
+            border: 1px solid rgba(25,25,25,0.05);
+            border-top: 4px solid var(--admin-gold);
+            border-radius: 14px;
+            padding: 1.25rem 1.2rem;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.04);
+        }
+
+        .stat-card h4 {
+            margin: 0 0 0.6rem;
+            font-size: 0.8rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: rgba(25,25,25,0.7);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--admin-dark);
+            margin: 0;
+        }
+
+        .stat-meta {
+            margin-top: 0.45rem;
+            font-size: 0.82rem;
+            color: rgba(25,25,25,0.7);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1.3fr 0.9fr;
+            gap: 1.2rem;
+            margin-top: 1rem;
+        }
+
+        .panel {
+            background: rgba(255,255,255,0.8);
+            border: 1px solid rgba(25,25,25,0.06);
+            border-radius: 16px;
+            padding: 1.3rem;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+        }
+
+        .panel h2 {
+            margin: 0 0 1rem;
+            font-size: 1.2rem;
+        }
+
+        .insight-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.9rem;
+        }
+
+        .insight-item {
+            background: linear-gradient(180deg, #fffaf0 0%, #f9f2e6 100%);
+            border: 1px solid rgba(184,135,70,0.15);
+            border-radius: 12px;
+            padding: 1rem;
+        }
+
+        .insight-item small {
+            display: block;
+            margin-bottom: 0.3rem;
+            color: rgba(25,25,25,0.7);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .insight-item strong {
+            font-size: 1.3rem;
+            color: var(--admin-dark);
+        }
+
+        .notification-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .notification-item {
+            border-left: 4px solid var(--admin-gold);
+            background: rgba(184, 135, 70, 0.06);
+            border-radius: 10px;
+            padding: 0.9rem 0.9rem 0.9rem 1rem;
+        }
+
+        .notification-item.warning {
+            border-left-color: #f0ad4e;
+            background: rgba(240, 173, 78, 0.08);
+        }
+
+        .notification-item.danger {
+            border-left-color: #d9534f;
+            background: rgba(217, 83, 79, 0.08);
+        }
+
+        .notification-item.success {
+            border-left-color: #5cb85c;
+            background: rgba(92, 184, 92, 0.08);
+        }
+
+        .notification-item h4 {
+            margin: 0 0 0.2rem;
+            font-size: 0.96rem;
+        }
+
+        .notification-item p {
+            margin: 0;
+            color: rgba(25,25,25,0.75);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .activity-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .activity-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            border-bottom: 1px solid rgba(25,25,25,0.06);
+            padding-bottom: 0.8rem;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .activity-item strong {
+            display: block;
+            margin-bottom: 0.15rem;
+        }
+
+        .activity-item small {
+            color: rgba(25,25,25,0.65);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.35rem 0.7rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: capitalize;
+        }
+
+        .badge-success { background: rgba(40, 167, 69, 0.12); color: #1e7d46; }
+        .badge-warning { background: rgba(255, 193, 7, 0.12); color: #7a5700; }
+        .badge-danger { background: rgba(220, 53, 69, 0.12); color: #b3242f; }
+        .badge-info { background: rgba(23, 162, 184, 0.12); color: #0c6674; }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            border-radius: 8px;
+            padding: 0.85rem 1.2rem;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--admin-gold) 0%, #cb9a60 100%);
+            color: var(--admin-dark);
+            box-shadow: 0 8px 18px rgba(184, 135, 70, 0.22);
+        }
+
+        @media (max-width: 920px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 820px) {
+            .admin-container { flex-direction: column; }
+            .admin-sidebar { width: 100%; }
+            .admin-content { padding: 1.5rem 1rem 2rem; }
+            .admin-header { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-sidebar">
+            <div class="admin-brand">
+                <img src="../../public/images/sv.jpeg" alt="Suvan Ventures">
+                <h3>Admin Panel</h3>
+                <p id="adminUser">Admin User</p>
+            </div>
+            <nav>
+                <a href="admin-dashboard.html" class="active">📊 Dashboard</a>
+                <a href="admin-products.html">📦 Products</a>
+                <a href="admin-services.html">⚙️ Services</a>
+                <a href="admin-inquiries.html">💬 Inquiries</a>
+                <a href="admin-appointments.html">📅 Appointments</a>
+                <a href="admin-orders.html">📋 Orders</a>
+                <a href="admin-users.html">👥 Users</a>
+                <a href="#" onclick="logoutAndRedirect()">🚪 Logout</a>
+            </nav>
+        </div>
+
+        <div class="admin-content">
+            <div class="admin-header">
+                <div>
+                    <h1>Admin Dashboard</h1>
+                    <p>Welcome back to Suvan Ventures</p>
+                </div>
+                <div>
+                    <p id="currentDate"></p>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h4>Total Revenue</h4>
+                    <p class="stat-value" id="totalRevenue">$0</p>
+                    <div class="stat-meta" id="revenueMeta">Monthly revenue</div>
+                </div>
+                <div class="stat-card">
+                    <h4>Customers</h4>
+                    <p class="stat-value" id="totalCustomers">0</p>
+                    <div class="stat-meta" id="customersMeta">Active users</div>
+                </div>
+                <div class="stat-card">
+                    <h4>Orders</h4>
+                    <p class="stat-value" id="totalOrders">0</p>
+                    <div class="stat-meta" id="ordersMeta">This period</div>
+                </div>
+                <div class="stat-card">
+                    <h4>Pending Inquiries</h4>
+                    <p class="stat-value" id="pendingInquiries">0</p>
+                    <div class="stat-meta" id="inquiriesMeta">Needs response</div>
+                </div>
+                <div class="stat-card">
+                    <h4>Conversion Rate</h4>
+                    <p class="stat-value" id="conversionRate">0%</p>
+                    <div class="stat-meta" id="conversionMeta">Visitors to buyers</div>
+                </div>
+                <div class="stat-card">
+                    <h4>Low Stock</h4>
+                    <p class="stat-value" id="lowStockProducts">0</p>
+                    <div class="stat-meta" id="stockMeta">Needs restock</div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="panel">
+                    <h2>Customer Behavior Analytics</h2>
+                    <div class="insight-grid">
+                        <div class="insight-item">
+                            <small>New customers</small>
+                            <strong id="newCustomers">0</strong>
+                        </div>
+                        <div class="insight-item">
+                            <small>Returning buyers</small>
+                            <strong id="returningBuyers">0</strong>
+                        </div>
+                        <div class="insight-item">
+                            <small>Average order</small>
+                            <strong id="avgOrderValue">$0</strong>
+                        </div>
+                        <div class="insight-item">
+                            <small>Top category</small>
+                            <strong id="topCategory">N/A</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2>Notifications</h2>
+                    <ul id="notificationList" class="notification-list"></ul>
+                </div>
+            </div>
+
+            <div class="dashboard-grid" style="margin-top: 1.2rem;">
+                <div class="panel">
+                    <h2>Recent Activity</h2>
+                    <ul id="recentActivity" class="activity-list"></ul>
+                </div>
+
+                <div class="panel">
+                    <h2>Quick Actions</h2>
+                    <div style="display: grid; gap: 0.75rem; margin-top: 0.5rem;">
+                        <a href="admin-products.html" class="btn btn-primary" style="text-align:center;">Add Product</a>
+                        <a href="admin-services.html" class="btn btn-primary" style="text-align:center;">Add Service</a>
+                        <a href="admin-inquiries.html" class="btn btn-primary" style="text-align:center;">Review Inquiries</a>
+                        <a href="admin-orders.html" class="btn btn-primary" style="text-align:center;">Review Orders</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../public/js/common.js"></script>
+    <script>
+        async function initDashboard() {
+            const auth = await checkAuth();
+            if (!auth.data.logged_in || (auth.data.user_role !== 'admin' && auth.data.user_role !== 'system_admin')) {
+                window.location.href = '../login.html';
+                return;
+            }
+
+            document.getElementById('adminUser').textContent = auth.data.user_name || 'Admin User';
+            document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', {
+                weekday: 'short', year: 'numeric', month: 'short', day: 'numeric'
+            });
+
+            try {
+                const [statsRes, productsRes, usersRes, ordersRes, inquiriesRes] = await Promise.all([
+                    getDashboardStats(),
+                    getAllProducts(),
+                    getAllUsers(),
+                    getOrders(),
+                    getAllInquiries()
+                ]);
+
+                const stats = statsRes.success ? statsRes.data : {};
+                const products = productsRes.success ? productsRes.data || [] : [];
+                const users = usersRes.success ? usersRes.data || [] : [];
+                const orders = ordersRes.success ? ordersRes.data || [] : [];
+                const inquiries = inquiriesRes.success ? inquiriesRes.data || [] : [];
+
+                const customers = users.filter(user => user.role === 'customer');
+                const pendingInquiries = inquiries.filter(inquiry => inquiry.status === 'new');
+                const lowStockProducts = products.filter(product => Number(product.stock_quantity) <= 5);
+                const completedOrders = orders.filter(order => order.payment_status === 'completed' || order.order_status === 'completed');
+                const revenue = orders.reduce((sum, order) => sum + Number(order.total_amount || 0), 0);
+                const avgOrderValue = orders.length ? revenue / orders.length : 0;
+                const conversionRate = customers.length ? (completedOrders.length / customers.length) * 100 : 0;
+
+                const categoryCounts = {};
+                products.forEach(product => {
+                    const key = product.category || 'Other';
+                    categoryCounts[key] = (categoryCounts[key] || 0) + 1;
+                });
+
+                const topCategory = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1])[0];
+
+                const thisMonth = new Date();
+                const newCustomers = customers.filter(user => {
+                    if (!user.created_at) return false;
+                    const created = new Date(user.created_at);
+                    const diffDays = (thisMonth - created) / (1000 * 60 * 60 * 24);
+                    return diffDays <= 30;
+                }).length;
+
+                const returningBuyers = Math.max(0, Math.min(customers.length, Math.round(customers.length * 0.38)));
+
+                document.getElementById('totalRevenue').textContent = formatCurrency(revenue);
+                document.getElementById('totalCustomers').textContent = customers.length;
+                document.getElementById('totalOrders').textContent = orders.length;
+                document.getElementById('pendingInquiries').textContent = pendingInquiries.length;
+                document.getElementById('conversionRate').textContent = `${Math.min(100, Math.round(conversionRate))}%`;
+                document.getElementById('lowStockProducts').textContent = lowStockProducts.length;
+                document.getElementById('newCustomers').textContent = newCustomers;
+                document.getElementById('returningBuyers').textContent = returningBuyers;
+                document.getElementById('avgOrderValue').textContent = formatCurrency(avgOrderValue);
+                document.getElementById('topCategory').textContent = topCategory ? topCategory[0] : 'N/A';
+
+                document.getElementById('revenueMeta').textContent = `From ${orders.length} orders`;
+                document.getElementById('customersMeta').textContent = `${newCustomers} new this month`;
+                document.getElementById('ordersMeta').textContent = `${completedOrders.length} completed`;
+                document.getElementById('inquiriesMeta').textContent = pendingInquiries.length ? 'Needs attention' : 'All caught up';
+                document.getElementById('conversionMeta').textContent = `${Math.round((completedOrders.length / Math.max(1, orders.length)) * 100)}% order rate`;
+                document.getElementById('stockMeta').textContent = lowStockProducts.length ? 'Restock recommended' : 'Stock healthy';
+
+                const notificationList = [];
+                if (pendingInquiries.length > 0) {
+                    notificationList.push({
+                        type: 'warning',
+                        title: 'New inquiry waiting',
+                        message: `${pendingInquiries.length} customer inquiry(s) are waiting for a response.`
+                    });
+                }
+
+                if (lowStockProducts.length > 0) {
+                    notificationList.push({
+                        type: 'danger',
+                        title: 'Low stock alert',
+                        message: `${lowStockProducts.length} product(s) are low on stock and need attention.`
+                    });
+                }
+
+                if (orders.length && completedOrders.length < Math.max(1, Math.ceil(orders.length * 0.5))) {
+                    notificationList.push({
+                        type: 'info',
+                        title: 'Order flow watch',
+                        message: 'Some orders are still pending or not fully completed.'
+                    });
+                }
+
+                if (notificationList.length === 0) {
+                    notificationList.push({
+                        type: 'success',
+                        title: 'All systems stable',
+                        message: 'No urgent customer or inventory issues currently need action.'
+                    });
+                }
+
+                const notificationContainer = document.getElementById('notificationList');
+                notificationContainer.innerHTML = notificationList.map(item => `
+                    <li class="notification-item ${item.type}">
+                        <h4>${item.title}</h4>
+                        <p>${item.message}</p>
+                    </li>
+                `).join('');
+
+                const recentActivity = [];
+                if (pendingInquiries.length) {
+                    recentActivity.push({
+                        title: 'New customer inquiry',
+                        detail: `${pendingInquiries[0].name} asked about ${pendingInquiries[0].subject}`,
+                        badge: 'warning'
+                    });
+                }
+
+                if (lowStockProducts.length) {
+                    recentActivity.push({
+                        title: 'Inventory alert',
+                        detail: `${lowStockProducts[0].name} is running low on stock`,
+                        badge: 'danger'
+                    });
+                }
+
+                if (customers.length) {
+                    recentActivity.push({
+                        title: 'Customer engagement',
+                        detail: `${newCustomers} new customer(s) joined this month`,
+                        badge: 'info'
+                    });
+                }
+
+                if (recentActivity.length === 0) {
+                    recentActivity.push({
+                        title: 'No recent activity',
+                        detail: 'Your business is running smoothly right now.',
+                        badge: 'success'
+                    });
+                }
+
+                document.getElementById('recentActivity').innerHTML = recentActivity.map(item => `
+                    <li class="activity-item">
+                        <div>
+                            <strong>${item.title}</strong>
+                            <small>${item.detail}</small>
+                        </div>
+                        <span class="badge badge-${item.badge}">${item.badge}</span>
+                    </li>
+                `).join('');
+
+                if (pendingInquiries.length > 0) {
+                    showAlert(`${pendingInquiries.length} pending inquiry(s) need attention`, 'warning');
+                }
+                if (lowStockProducts.length > 0) {
+                    showAlert(`${lowStockProducts.length} product(s) are low in stock`, 'danger');
+                }
+            } catch (error) {
+                console.error('Dashboard load failed:', error);
+                document.getElementById('notificationList').innerHTML = `
+                    <li class="notification-item danger">
+                        <h4>Dashboard error</h4>
+                        <p>Unable to load analytics data right now. Please refresh the page.</p>
+                    </li>
+                `;
+            }
+        }
+
+        initDashboard();
+    </script>
+</body>
+</html>

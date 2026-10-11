@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - Suvan Ventures</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-logo"><img src="images/sv.jpeg" alt="Suvan Ventures" style="height: 50px;"></div>
+            <ul class="navbar-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="products.html">Products</a></li>
+                <li><a href="services.html">Services</a></li>
+                <li><a href="contact.html" class="active">Contact</a></li>
+            </ul>
+            <div class="navbar-auth">
+                <a href="cart.html" class="navbar-icon" title="Cart">🛒</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="hero">
+        <div class="container">
+            <h1>Contact Us</h1>
+            <p>Get in touch with our team for inquiries and support</p>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="section">
+        <div class="container">
+            <div class="grid col-2">
+                <!-- Contact Form -->
+                <div>
+                    <h2>Send us a Message</h2>
+                    <form id="contactForm">
+                        <div class="form-group">
+                            <label for="name">Full Name *</label>
+                            <input type="text" id="name" name="name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email Address *</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input type="text" id="phone" name="phone">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="subject">Subject *</label>
+                            <input type="text" id="subject" name="subject" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="service_type">Service Type (Optional)</label>
+                            <select id="service_type" name="service_type">
+                                <option value="">Select a service</option>
+                                <option value="Website Development">Website Development</option>
+                                <option value="Networking Solutions">Networking Solutions</option>
+                                <option value="CCTV Installation">CCTV Installation</option>
+                                <option value="IT Support">IT Support</option>
+                                <option value="Custom Software">Custom Software Development</option>
+                                <option value="School Management">School Management Systems</option>
+                                <option value="POS Systems">POS Systems</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="message">Message *</label>
+                            <textarea id="message" name="message" required></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Send Message</button>
+                    </form>
+                </div>
+
+                <!-- Contact Info -->
+                <div>
+                    <h2>Contact Information</h2>
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 style="margin-bottom: 2rem;">Get in Touch</h3>
+                            
+                            <div style="margin-bottom: 2rem;">
+                                <h4 style="color: var(--primary-gold); margin-bottom: 0.5rem;">📍 Address</h4>
+                                <p>123 Business Street<br>City Name, State 12345<br>Country</p>
+                            </div>
+
+                            <div style="margin-bottom: 2rem;">
+                                <h4 style="color: var(--primary-gold); margin-bottom: 0.5rem;">📞 Phone</h4>
+                                <p>+1 (234) 567-8900<br>+1 (234) 567-8901</p>
+                            </div>
+
+                            <div style="margin-bottom: 2rem;">
+                                <h4 style="color: var(--primary-gold); margin-bottom: 0.5rem;">📧 Email</h4>
+                                <p>info@suvanventures.com<br>support@suvanventures.com</p>
+                            </div>
+
+                            <div>
+                                <h4 style="color: var(--primary-gold); margin-bottom: 0.5rem;">🕐 Business Hours</h4>
+                                <p>Monday - Friday: 9:00 AM - 6:00 PM<br>Saturday: 10:00 AM - 4:00 PM<br>Sunday: Closed</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>About Us</h4>
+                    <p>Suvan Ventures Company Limited is a leading technology solutions provider.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="products.html">Products</a></li>
+                        <li><a href="services.html">Services</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Suvan Ventures Company Limited. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/common.js"></script>
+    <script>
+        document.getElementById('contactForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value || '',
+                subject: document.getElementById('subject').value,
+                message: document.getElementById('message').value,
+                service_type: document.getElementById('service_type').value || ''
+            };
+
+            const result = await submitInquiry(
+                formData.name,
+                formData.email,
+                formData.phone,
+                formData.subject,
+                formData.message,
+                formData.service_type
+            );
+
+            if (result.success) {
+                showAlert('Thank you for your message! We will respond shortly.', 'success');
+                document.getElementById('contactForm').reset();
+            } else {
+                showAlert('Failed to send message. Please try again.', 'danger');
+            }
+        });
+    </script>
+</body>
+</html>

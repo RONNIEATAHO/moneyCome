@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login & Register - Suvan Ventures</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .auth-section {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, #2d2d2d 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 0;
+        }
+
+        .auth-layout {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 0;
+            max-width: 900px;
+            width: 100%;
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .auth-visual {
+            background: linear-gradient(135deg, var(--primary-gold) 0%, #d4a574 100%);
+            padding: 3rem 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: white;
+        }
+
+        .auth-visual img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .auth-visual h3 {
+            color: var(--primary-dark);
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-visual p {
+            color: rgba(25, 25, 25, 0.8);
+            font-size: 0.95rem;
+        }
+
+        .auth-container {
+            padding: 3rem 2.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .auth-card {
+            width: 100%;
+        }
+
+        .auth-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--primary-gold);
+        }
+        
+        .auth-tab {
+            flex: 1;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-light);
+            transition: all 0.3s ease;
+        }
+        
+        .auth-tab.active {
+            color: var(--primary-gold);
+            border-bottom: 3px solid var(--primary-gold);
+            margin-bottom: -2px;
+        }
+        
+        .auth-form {
+            display: none;
+        }
+        
+        .auth-form.active {
+            display: block;
+        }
+
+        .auth-form h2 {
+            color: var(--primary-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .auth-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .auth-visual {
+                padding: 2rem;
+            }
+
+            .auth-visual img {
+                height: 200px;
+            }
+
+            .auth-container {
+                padding: 2rem 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-logo"><img src="images/sv.jpeg" alt="Suvan Ventures" style="height: 50px;"></div>
+            <ul class="navbar-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="products.html">Products</a></li>
+                <li><a href="services.html">Services</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+            <div class="navbar-auth">
+                <a href="cart.html" class="navbar-icon" title="Cart">🛒</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Authentication Section -->
+    <section class="auth-section">
+        <div class="auth-layout">
+            <div class="auth-visual">
+                <img src="images/WhatsApp Image 2026-10-08 at 16.40.51 (1).jpeg" alt="Suvan Ventures Services">
+                <h3>Welcome to Suvan Ventures</h3>
+                <p>Your trusted partner for technology and business solutions. Join our community today and access premium services.</p>
+            </div>
+
+            <div class="auth-container">
+                <div class="auth-card">
+                    <!-- Tabs -->
+                    <div class="auth-tabs">
+                        <button class="auth-tab active" onclick="switchTab('login')">Login</button>
+                        <button class="auth-tab" onclick="switchTab('register')">Register</button>
+                    </div>
+
+                    <!-- Login Form -->
+                    <form id="loginForm" class="auth-form active">
+                        <h2>Welcome Back</h2>
+                        <p class="text-muted" style="margin-bottom: 2rem;">Log in to your account to continue shopping</p>
+
+                        <div class="form-group">
+                            <label for="loginEmail">Email Address</label>
+                            <input type="email" id="loginEmail" name="email" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="loginPassword">Password</label>
+                            <input type="password" id="loginPassword" name="password" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" name="remember"> Remember me
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="loginRoleCustomer">
+                                <input type="radio" id="loginRoleCustomer" name="loginRole" value="customer" checked>
+                                Customer
+                            </label>
+                            <label for="loginRoleAdmin">
+                                <input type="radio" id="loginRoleAdmin" name="loginRole" value="admin">
+                                Admin
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
+
+                        <p style="text-align: center; margin-top: 1.5rem; color: var(--text-light);">
+                            Don't have an account? <a href="#" onclick="switchTab('register')">Register here</a>
+                        </p>
+
+                        <p style="text-align: center; color: var(--text-light);">
+                            <a href="#" style="color: var(--primary-gold);">Forgot password?</a>
+                        </p>
+                    </form>
+
+                    <!-- Register Form -->
+                    <form id="registerForm" class="auth-form">
+                        <h2>Create Account</h2>
+                        <p class="text-muted" style="margin-bottom: 2rem;">Join us and start shopping</p>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="firstName">First Name</label>
+                                <input type="text" id="firstName" name="first_name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="lastName">Last Name</label>
+                                <input type="text" id="lastName" name="last_name" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="registerEmail">Email Address</label>
+                            <input type="email" id="registerEmail" name="email" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input type="text" id="phone" name="phone">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="registerPassword">Password</label>
+                            <input type="password" id="registerPassword" name="password" required>
+                            <p class="text-muted" style="font-size: 0.85rem; margin-top: 0.5rem;">Must be at least 6 characters</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="confirmPassword">Confirm Password</label>
+                            <input type="password" id="confirmPassword" name="confirm_password" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" name="terms" required> I agree to the Terms & Conditions
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">Create Account</button>
+
+                        <p style="text-align: center; margin-top: 1.5rem; color: var(--text-light);">
+                            Already have an account? <a href="#" onclick="switchTab('login')">Login here</a>
+                        </p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>About Us</h4>
+                    <p>Suvan Ventures Company Limited is a leading technology solutions provider.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="products.html">Products</a></li>
+                        <li><a href="services.html">Services</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Suvan Ventures Company Limited. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/common.js"></script>
+    <script>
+        function switchTab(tab) {
+            document.querySelectorAll('.auth-form').forEach(form => form.classList.remove('active'));
+            document.querySelectorAll('.auth-tab').forEach(tabBtn => tabBtn.classList.remove('active'));
+            document.getElementById(tab + 'Form').classList.add('active');
+            const selectedTab = document.querySelector(`.auth-tab[onclick="switchTab('${tab}')"]`);
+            if (selectedTab) selectedTab.classList.add('active');
+        }
+
+        function getSelectedLoginRole() {
+            const selected = document.querySelector('input[name="loginRole"]:checked');
+            return selected ? selected.value : 'customer';
+        }
+
+        function redirectAfterLogin(userRole) {
+            if (userRole === 'admin' || userRole === 'system_admin') {
+                window.location.href = '../backend/admin/admin-dashboard.html';
+                return;
+            }
+            window.location.href = 'index.html';
+        }
+
+        // Login form submission
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const role = getSelectedLoginRole();
+
+            const result = await loginUser(email, password);
+
+            if (result.success) {
+                const userRole = result.data.user_role || role;
+                showAlert('Login successful! Redirecting...', 'success');
+                setTimeout(() => {
+                    redirectAfterLogin(userRole);
+                }, 1200);
+            } else {
+                showAlert(result.message, 'danger');
+            }
+        });
+
+        // Register form submission
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (password !== confirmPassword) {
+                showAlert('Passwords do not match', 'danger');
+                return;
+            }
+
+            if (password.length < 6) {
+                showAlert('Password must be at least 6 characters', 'danger');
+                return;
+            }
+
+            const result = await registerUser(
+                document.getElementById('registerEmail').value,
+                password,
+                document.getElementById('firstName').value,
+                document.getElementById('lastName').value,
+                document.getElementById('phone').value
+            );
+
+            if (result.success) {
+                showAlert('Registration successful! Please log in.', 'success');
+                setTimeout(() => {
+                    switchTab('login');
+                }, 1200);
+            } else {
+                showAlert(result.message, 'danger');
+            }
+        });
+
+        // Check if user is already logged in
+        async function checkCurrentAuth() {
+            const auth = await checkAuth();
+            if (auth.data.logged_in) {
+                redirectAfterLogin(auth.data.user_role);
+            }
+        }
+
+        checkCurrentAuth();
+    </script>
+</body>
+</html>

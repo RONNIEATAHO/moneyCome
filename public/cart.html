@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart - Suvan Ventures</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-logo"><img src="images/sv.jpeg" alt="Suvan Ventures" style="height: 50px;"></div>
+            <ul class="navbar-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="products.html">Products</a></li>
+                <li><a href="services.html">Services</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+            <div class="navbar-auth">
+                <a href="cart.html" class="navbar-icon active" title="Cart">🛒</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="hero">
+        <div class="container">
+            <h1>Shopping Cart</h1>
+            <p>Review your selected items before checkout</p>
+        </div>
+    </section>
+
+    <!-- Cart Section -->
+    <section class="section">
+        <div class="container">
+            <div id="loginAlert" style="display: none;" class="alert alert-warning">
+                Please <a href="login.html">login</a> to view your cart.
+            </div>
+
+            <div id="cartContainer" style="display: none;">
+                <div class="grid col-2">
+                    <!-- Cart Items -->
+                    <div>
+                        <h2>Cart Items</h2>
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="border-bottom: 2px solid var(--primary-gold);">
+                                    <th style="text-align: left; padding: 1rem;">Product/Service</th>
+                                    <th style="text-align: center; padding: 1rem;">Qty</th>
+                                    <th style="text-align: right; padding: 1rem;">Price</th>
+                                    <th style="text-align: right; padding: 1rem;">Total</th>
+                                    <th style="text-align: center; padding: 1rem;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cartItems">
+                                <!-- Items will be loaded here -->
+                            </tbody>
+                        </table>
+                        <div id="emptyCart" style="text-align: center; padding: 2rem;">
+                            <p style="font-size: 1.1rem; color: var(--text-light);">Your cart is empty</p>
+                            <a href="products.html" class="btn btn-primary mt-2">Continue Shopping</a>
+                        </div>
+                    </div>
+
+                    <!-- Cart Summary -->
+                    <div>
+                        <div class="card">
+                            <div class="card-body">
+                                <h3 class="card-title">Order Summary</h3>
+                                
+                                <div style="margin-bottom: 1.5rem;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                                        <span>Subtotal:</span>
+                                        <span id="subtotal">${formatCurrency(0)}</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                                        <span>Tax (5%):</span>
+                                        <span id="tax">${formatCurrency(0)}</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; padding-top: 1rem; border-top: 1px solid var(--border-color); font-size: 1.2rem; font-weight: 700; color: var(--primary-gold);">
+                                        <span>Total:</span>
+                                        <span id="total">${formatCurrency(0)}</span>
+                                    </div>
+                                </div>
+
+                                <button onclick="proceedToCheckout()" class="btn btn-primary" style="width: 100%; padding: 1rem;">Proceed to Checkout</button>
+                                <a href="products.html" class="btn btn-secondary" style="width: 100%; padding: 1rem; border: 1px solid var(--border-color); color: var(--primary-dark); margin-top: 1rem; display: block; text-align: center;">Continue Shopping</a>
+                                <button onclick="clearCartItems()" class="btn btn-outline" style="width: 100%; padding: 1rem; margin-top: 1rem;">Clear Cart</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>About Us</h4>
+                    <p>Suvan Ventures Company Limited is a leading technology solutions provider.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="products.html">Products</a></li>
+                        <li><a href="services.html">Services</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Suvan Ventures Company Limited. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/common.js"></script>
+    <script>
+        async function loadCart() {
+            const auth = await checkAuth();
+            if (!auth.data || !auth.data.logged_in) {
+                document.getElementById('loginAlert').style.display = 'block';
+                document.getElementById('cartContainer').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('cartContainer').style.display = 'block';
+            const result = await getCart();
+            
+            if (result.success && result.data && result.data.items.length > 0) {
+                displayCartItems(result.data.items, result.data.total);
+                document.getElementById('emptyCart').style.display = 'none';
+            } else {
+                document.getElementById('emptyCart').style.display = 'block';
+            }
+        }
+
+        function displayCartItems(items, total) {
+            const cartItemsContainer = document.getElementById('cartItems');
+            cartItemsContainer.innerHTML = '';
+
+            let subtotal = 0;
+            items.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                subtotal += itemTotal;
+                const itemName = item.product_name || item.service_name || 'Unknown Item';
+
+                const row = `
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 1rem;">${itemName}</td>
+                        <td style="text-align: center; padding: 1rem;">
+                            <input type="number" value="${item.quantity}" min="1" 
+                                   onchange="updateQuantity(${item.id}, this.value)" 
+                                   style="width: 50px; text-align: center;">
+                        </td>
+                        <td style="text-align: right; padding: 1rem;">${formatCurrency(item.price)}</td>
+                        <td style="text-align: right; padding: 1rem; font-weight: 600;">${formatCurrency(itemTotal)}</td>
+                        <td style="text-align: center; padding: 1rem;">
+                            <button onclick="removeItem(${item.id})" class="btn btn-danger btn-small">Remove</button>
+                        </td>
+                    </tr>
+                `;
+                cartItemsContainer.innerHTML += row;
+            });
+
+            const tax = subtotal * 0.05;
+            const totalAmount = subtotal + tax;
+
+            document.getElementById('subtotal').textContent = formatCurrency(subtotal);
+            document.getElementById('tax').textContent = formatCurrency(tax);
+            document.getElementById('total').textContent = formatCurrency(totalAmount);
+        }
+
+        async function updateQuantity(cartId, quantity) {
+            if (quantity < 1) {
+                removeItem(cartId);
+                return;
+            }
+            const result = await updateCartQuantity(cartId, parseInt(quantity));
+            if (result.success) {
+                loadCart();
+            }
+        }
+
+        async function removeItem(cartId) {
+            if (confirm('Remove this item from cart?')) {
+                const result = await removeFromCart(cartId);
+                if (result.success) {
+                    showAlert('Item removed from cart', 'success');
+                    loadCart();
+                }
+            }
+        }
+
+        async function clearCartItems() {
+            if (confirm('Clear all items from cart?')) {
+                const result = await clearCart();
+                if (result.success) {
+                    showAlert('Cart cleared', 'success');
+                    loadCart();
+                }
+            }
+        }
+
+        async function proceedToCheckout() {
+            const result = await checkout();
+            if (result.success) {
+                // Redirect to payment page
+                window.location.href = `payment.html?order_id=${result.data.order_id}`;
+            } else {
+                showAlert('Failed to create order. Please try again.', 'danger');
+            }
+        }
+
+        loadCart();
+    </script>
+</body>
+</html>

@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suvan Ventures - Home</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-logo"><img src="images/sv.jpeg" alt="Suvan Ventures" style="height: 50px;"></div>
+            <ul class="navbar-menu">
+                <li><a href="index.html" class="active">Home</a></li>
+                <li><a href="products.html">Products</a></li>
+                <li><a href="services.html">Services</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+            <div class="navbar-auth">
+                <a href="cart.html" class="navbar-icon" title="Cart">🛒</a>
+                <!-- Auth links will be populated by JavaScript -->
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container hero-layout">
+            <div class="hero-copy">
+                <span class="eyebrow">Trusted digital growth partner</span>
+                <h1>Smart technology solutions for modern businesses</h1>
+                <p>Your digital transformation partner for web, networking, CCTV, and business systems that help you grow faster.</p>
+                <div class="hero-actions">
+                    <a href="#" onclick="openAuthModal(); return false;" class="btn btn-primary">Get Started</a>
+                    <a href="services.html" class="btn btn-outline">Explore Services</a>
+                </div>
+                <div class="hero-metrics">
+                    <div>
+                        <strong>250+</strong>
+                        <span>Projects delivered</span>
+                    </div>
+                    <div>
+                        <strong>24/7</strong>
+                        <span>Support</span>
+                    </div>
+                    <div>
+                        <strong>98%</strong>
+                        <span>Client satisfaction</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="image-stack">
+                    <img src="images/WhatsApp Image 2026-10-08 at 16.40.51 (1).jpeg" alt="Business team meeting">
+                    <img src="images/WhatsApp Image 2026-10-08 at 16.40.49 (1).jpeg" alt="Business planning session">
+                    <img src="images/WhatsApp Image 2026-10-08 at 16.40.58 (1).jpeg" alt="Technology setup and support">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Services Section -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">Our Services</h2>
+            <div class="grid">
+                <div class="card">
+                    <div class="card-image" style="background-image: url('images/web.png'); background-size: cover; background-position: center;"></div>
+                    <div class="card-body">
+                        <h3 class="card-title">🌐 Website Development</h3>
+                        <p class="card-text">Professional website design and development tailored to your business needs.</p>
+                        <p class="text-muted"><em>Starting from $500</em></p>
+                    </div>
+                    <div class="card-footer">
+                        <a href="services.html" class="btn btn-primary btn-small">View Details</a>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-image" style="background-image: url('images/WhatsApp Image 2026-10-08 at 16.40.49 (1).jpeg'); background-size: cover; background-position: center;"></div>
+                    <div class="card-body">
+                        <h3 class="card-title">🔗 Networking Solutions</h3>
+                        <p class="card-text">Robust networking infrastructure setup and maintenance for your organization.</p>
+                        <p class="text-muted"><em>Starting from $800</em></p>
+                    </div>
+                    <div class="card-footer">
+                        <a href="services.html" class="btn btn-primary btn-small">View Details</a>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-image" style="background-image: url('images/securityCamera.jpeg'); background-size: cover; background-position: center;"></div>
+                    <div class="card-body">
+                        <h3 class="card-title">📹 CCTV Camera Installation</h3>
+                        <p class="card-text">Professional security camera installation and surveillance system setup.</p>
+                        <p class="text-muted"><em>Starting from $1,200</em></p>
+                    </div>
+                    <div class="card-footer">
+                        <a href="services.html" class="btn btn-primary btn-small">View Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Products Section -->
+    <section class="section light-bg">
+        <div class="container">
+            <h2 class="section-title">Featured Products</h2>
+            <p style="text-align: center; margin-bottom: 2rem; color: var(--text-light);">Premium electronics and business tools built for performance</p>
+            <div id="featured-products" class="grid">
+                <!-- Products will be loaded here by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Choose Us -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">Why Choose Suvan Ventures?</h2>
+            <div class="grid col-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h3 style="font-size: 2rem;">✅</h3>
+                        <h4 class="card-title">Expert Team</h4>
+                        <p class="card-text">Experienced professionals with years of industry expertise.</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h3 style="font-size: 2rem;">💰</h3>
+                        <h4 class="card-title">Affordable Pricing</h4>
+                        <p class="card-text">Competitive rates without compromising on quality.</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h3 style="font-size: 2rem;">⚡</h3>
+                        <h4 class="card-title">Fast Service</h4>
+                        <p class="card-text">Quick turnaround times and efficient project delivery.</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h3 style="font-size: 2rem;">🤝</h3>
+                        <h4 class="card-title">Customer Support</h4>
+                        <p class="card-text">Dedicated support team available for all your needs.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="section light-bg">
+        <div class="container text-center">
+            <h2>Ready to Get Started?</h2>
+            <p style="font-size: 1.1rem; margin-bottom: 2rem; color: var(--text-light);">Create your account or sign in to access our services, products, and support.</p>
+            <a href="login.html?mode=register" class="btn btn-primary">Start Your Journey</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>About Us</h4>
+                    <p>Suvan Ventures Company Limited is a leading technology solutions provider offering comprehensive services and products for businesses of all sizes.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Services</h4>
+                    <ul>
+                        <li><a href="services.html">Website Development</a></li>
+                        <li><a href="services.html">Networking Solutions</a></li>
+                        <li><a href="services.html">CCTV Installation</a></li>
+                        <li><a href="services.html">IT Support</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="products.html">Products</a></li>
+                        <li><a href="services.html">Services</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact Info</h4>
+                    <p>📍 123 Business Street, City Name</p>
+                    <p>📞 +1 (234) 567-8900</p>
+                    <p>📧 info@suvanventures.com</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Suvan Ventures Company Limited. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/common.js"></script>
+    <script>
+        async function loadFeaturedProducts() {
+            const result = await getAllProducts();
+            if (result.success && result.data && result.data.length > 0) {
+                const container = document.getElementById('featured-products');
+                container.innerHTML = '';
+                
+                result.data.slice(0, 3).forEach((product, index) => {
+                    const images = [
+                        'images/WhatsApp Image 2026-10-08 at 16.40.51 (1).jpeg',
+                        'images/WhatsApp Image 2026-10-08 at 16.40.49 (1).jpeg',
+                        'images/WhatsApp Image 2026-10-08 at 16.40.58 (1).jpeg'
+                    ];
+                    const productCard = `
+                        <div class="card">
+                            <div class="card-image" style="background-image: url('${images[index % images.length]}'); background-size: cover; background-position: center;"></div>
+                            <div class="card-body">
+                                <h3 class="card-title">${product.name}</h3>
+                                <p class="card-text">${product.description.substring(0, 100)}...</p>
+                                <div class="card-price">${formatCurrency(product.price)}</div>
+                                <p class="text-muted">Stock: ${product.stock_quantity}</p>
+                            </div>
+                            <div class="card-footer">
+                                <a href="products.html" class="btn btn-primary btn-small" style="flex-grow: 1;">View</a>
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += productCard;
+                });
+            } else {
+                document.getElementById('featured-products').innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No products available yet.</p>';
+            }
+        }
+
+        loadFeaturedProducts();
+    </script>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="auth-modal">
+        <div class="auth-modal-overlay" onclick="closeAuthModal()"></div>
+        <div class="auth-modal-content">
+            <button class="auth-modal-close" onclick="closeAuthModal()">✕</button>
+            
+            <div class="auth-modal-header">
+                <h2 id="authModalTitle">Sign in</h2>
+            </div>
+
+            <div class="auth-modal-form-section">
+                <!-- Login Form -->
+                <form id="modalLoginForm" class="auth-form-wrapper active">
+                    <div class="auth-form-group">
+                        <label for="modalLoginEmail">Email address</label>
+                        <input type="email" id="modalLoginEmail" name="email" required>
+                    </div>
+
+                    <div class="auth-form-group">
+                        <label for="modalLoginPassword">Password</label>
+                        <input type="password" id="modalLoginPassword" name="password" required>
+                    </div>
+
+                    <div class="auth-checkbox-group">
+                        <label>
+                            <input type="checkbox" name="remember">
+                            Stay signed in
+                        </label>
+                        <a href="#" class="auth-forgot-link">Forgot your password?</a>
+                    </div>
+
+                    <button type="submit" class="auth-submit-btn">Sign in</button>
+
+                    <div class="auth-divider">
+                        <span>OR</span>
+                    </div>
+
+                    <div class="auth-social-buttons">
+                        <button type="button" class="auth-social-btn auth-social-google" onclick="showAlert('Google login coming soon', 'info')">
+                            Continue with Google
+                        </button>
+                        <button type="button" class="auth-social-btn auth-social-facebook" onclick="showAlert('Facebook login coming soon', 'info')">
+                            Continue with Facebook
+                        </button>
+                        <button type="button" class="auth-social-btn auth-social-apple" onclick="showAlert('Apple login coming soon', 'info')">
+                            Continue with Apple
+                        </button>
+                    </div>
+
+                    <div class="auth-footer">
+                        Don't have an account? <a href="#" onclick="switchAuthTab('signup'); return false;">Sign up</a>
+                    </div>
+                </form>
+
+                <!-- Signup Form -->
+                <form id="modalSignupForm" class="auth-form-wrapper">
+                    <div class="auth-form-group">
+                        <label for="modalFirstName">First name</label>
+                        <input type="text" id="modalFirstName" name="first_name" required>
+                    </div>
+
+                    <div class="auth-form-group">
+                        <label for="modalLastName">Last name</label>
+                        <input type="text" id="modalLastName" name="last_name" required>
+                    </div>
+
+                    <div class="auth-form-group">
+                        <label for="modalSignupEmail">Email address</label>
+                        <input type="email" id="modalSignupEmail" name="email" required>
+                    </div>
+
+                    <div class="auth-form-group">
+                        <label for="modalPhone">Phone number (optional)</label>
+                        <input type="text" id="modalPhone" name="phone">
+                    </div>
+
+                    <div class="auth-form-group">
+                        <label for="modalSignupPassword">Password</label>
+                        <input type="password" id="modalSignupPassword" name="password" required>
+                    </div>
+
+                    <div class="auth-form-group">
+                        <label for="modalConfirmPassword">Confirm password</label>
+                        <input type="password" id="modalConfirmPassword" name="confirm_password" required>
+                    </div>
+
+                    <button type="submit" class="auth-submit-btn">Create account</button>
+
+                    <div class="auth-footer">
+                        Already have an account? <a href="#" onclick="switchAuthTab('login'); return false;">Sign in</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auth Modal Functions
+        function openAuthModal() {
+            document.getElementById('authModal').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.remove('open');
+            document.body.style.overflow = 'auto';
+        }
+
+        function switchAuthTab(tab) {
+            const loginForm = document.getElementById('modalLoginForm');
+            const signupForm = document.getElementById('modalSignupForm');
+            const tabs = document.querySelectorAll('.auth-tab');
+
+            tabs.forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (tab === 'login') {
+                loginForm.classList.add('active');
+                signupForm.classList.remove('active');
+            } else {
+                signupForm.classList.add('active');
+                loginForm.classList.remove('active');
+            }
+        }
+
+        // Modal Login Form Handler
+        document.getElementById('modalLoginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('modalLoginEmail').value;
+            const password = document.getElementById('modalLoginPassword').value;
+
+            const result = await loginUser(email, password);
+
+            if (result.success) {
+                showAlert('Login successful! Redirecting...', 'success');
+                setTimeout(() => {
+                    if (result.data.user_role === 'admin' || result.data.user_role === 'system_admin') {
+                        window.location.href = '../backend/admin/admin-dashboard.html';
+                    } else {
+                        window.location.href = 'index.html';
+                    }
+                }, 1200);
+            } else {
+                showAlert(result.message, 'danger');
+            }
+        });
+
+        // Modal Signup Form Handler
+        document.getElementById('modalSignupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const password = document.getElementById('modalSignupPassword').value;
+            const confirmPassword = document.getElementById('modalConfirmPassword').value;
+
+            if (password !== confirmPassword) {
+                showAlert('Passwords do not match', 'danger');
+                return;
+            }
+
+            if (password.length < 6) {
+                showAlert('Password must be at least 6 characters', 'danger');
+                return;
+            }
+
+            const result = await registerUser(
+                document.getElementById('modalSignupEmail').value,
+                password,
+                document.getElementById('modalFirstName').value,
+                document.getElementById('modalLastName').value,
+                document.getElementById('modalPhone').value
+            );
+
+            if (result.success) {
+                showAlert('Account created! Please log in.', 'success');
+                setTimeout(() => {
+                    switchAuthTab('login');
+                    document.getElementById('modalLoginEmail').value = document.getElementById('modalSignupEmail').value;
+                }, 1200);
+            } else {
+                showAlert(result.message, 'danger');
+            }
+        });
+
+        // Close modal on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeAuthModal();
+        });
+    </script>
+</body>
+</html>

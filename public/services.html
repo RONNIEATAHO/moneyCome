@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Services - Suvan Ventures</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-logo"><img src="images/sv.jpeg" alt="Suvan Ventures" style="height: 50px;"></div>
+            <ul class="navbar-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="products.html">Products</a></li>
+                <li><a href="services.html" class="active">Services</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+            <div class="navbar-auth">
+                <a href="cart.html" class="navbar-icon" title="Cart">🛒</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="hero">
+        <div class="container">
+            <h1>Our Services</h1>
+            <p>Comprehensive technology solutions tailored to your business needs</p>
+        </div>
+    </section>
+
+    <!-- Filters Section -->
+    <section class="section">
+        <div class="container">
+            <div style="display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap;">
+                <input type="text" id="searchInput" placeholder="Search services..." style="padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 4px; flex: 1; min-width: 200px;">
+                <select id="categoryFilter" style="padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 4px;">
+                    <option value="">All Categories</option>
+                    <option value="Development">Development</option>
+                    <option value="Network">Network</option>
+                    <option value="Security">Security</option>
+                    <option value="Support">Support</option>
+                    <option value="Management">Management</option>
+                </select>
+            </div>
+
+            <div id="services-list" class="grid">
+                <!-- Services will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>About Us</h4>
+                    <p>Suvan Ventures Company Limited is a leading technology solutions provider.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="products.html">Products</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Suvan Ventures Company Limited. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/common.js"></script>
+    <script>
+        let allServices = [];
+
+        async function loadServices() {
+            showLoading('services-list');
+            const result = await getAllServices();
+            if (result.success && result.data) {
+                allServices = result.data;
+                displayServices(allServices);
+            } else {
+                document.getElementById('services-list').innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No services available.</p>';
+            }
+        }
+
+        function displayServices(services) {
+            const container = document.getElementById('services-list');
+            container.innerHTML = '';
+            
+            if (services.length === 0) {
+                container.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No services found.</p>';
+                return;
+            }
+
+            services.forEach(service => {
+                const serviceCard = `
+                    <div class="card">
+                        <div class="card-image" style="background-color: var(--primary-light-alt); display: flex; align-items: center; justify-content: center;">
+                            <span style="font-size: 3rem;">⚙️</span>
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">${service.name}</h3>
+                            <p class="card-text">${service.description.substring(0, 100)}...</p>
+                            <div class="card-price">${formatCurrency(service.price)}</div>
+                            <p class="text-muted">Category: ${service.category}</p>
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-primary btn-small" onclick="bookServiceModal(${service.id}, '${service.name}')">Book Service</button>
+                            <button class="btn btn-secondary btn-small" onclick="addServiceToCart(${service.id}, '${service.name}', ${service.price})">Add to Cart</button>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += serviceCard;
+            });
+        }
+
+        function filterServices() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const categoryTerm = document.getElementById('categoryFilter').value.toLowerCase();
+
+            const filtered = allServices.filter(service => {
+                const matchesSearch = service.name.toLowerCase().includes(searchTerm) || 
+                                     service.description.toLowerCase().includes(searchTerm);
+                const matchesCategory = !categoryTerm || service.category.toLowerCase().includes(categoryTerm);
+                return matchesSearch && matchesCategory;
+            });
+
+            displayServices(filtered);
+        }
+
+        async function addServiceToCart(serviceId, serviceName, price) {
+            const result = await addToCart('service', serviceId, 1, price);
+            if (result.success) {
+                showAlert(`${serviceName} added to cart!`, 'success');
+            } else {
+                showAlert('Please login to add items to cart', 'warning');
+            }
+        }
+
+        function bookServiceModal(serviceId, serviceName) {
+            showAlert('Service booking feature will be available soon!', 'info');
+        }
+
+        // Event listeners
+        document.getElementById('searchInput').addEventListener('input', filterServices);
+        document.getElementById('categoryFilter').addEventListener('change', filterServices);
+
+        // Load services on page load
+        loadServices();
+    </script>
+</body>
+</html>

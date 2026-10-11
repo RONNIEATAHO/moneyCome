@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment - Suvan Ventures</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-logo"><img src="images/sv.jpeg" alt="Suvan Ventures" style="height: 50px;"></div>
+            <ul class="navbar-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="products.html">Products</a></li>
+                <li><a href="services.html">Services</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+            <div class="navbar-auth">
+                <a href="cart.html" class="navbar-icon" title="Cart">🛒</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="hero">
+        <div class="container">
+            <h1>Checkout & Payment</h1>
+            <p>Complete your purchase securely</p>
+        </div>
+    </section>
+
+    <!-- Checkout Section -->
+    <section class="section">
+        <div class="container">
+            <div class="grid col-2" style="gap: 3rem;">
+                <!-- Checkout Form -->
+                <div>
+                    <h2>Order Information</h2>
+                    <div id="orderInfo" class="mt-3" style="background-color: var(--primary-light-alt); padding: 1.5rem; border-radius: 4px; margin-bottom: 2rem;">
+                        <!-- Order info will be loaded here -->
+                    </div>
+
+                    <h3>Select Payment Method</h3>
+                    <form id="paymentForm" class="mt-2">
+                        <div class="form-group">
+                            <label>
+                                <input type="radio" name="paymentMethod" value="credit_card" checked>
+                                <span style="margin-left: 0.5rem;">Credit/Debit Card</span>
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <input type="radio" name="paymentMethod" value="paypal">
+                                <span style="margin-left: 0.5rem;">PayPal</span>
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <input type="radio" name="paymentMethod" value="bank_transfer">
+                                <span style="margin-left: 0.5rem;">Bank Transfer</span>
+                            </label>
+                        </div>
+
+                        <div id="cardForm" class="mt-3">
+                            <h4>Card Details</h4>
+                            <div class="form-group">
+                                <label for="cardName">Cardholder Name</label>
+                                <input type="text" id="cardName" placeholder="John Doe" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="cardNumber">Card Number</label>
+                                <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" pattern="[0-9\s]{19}" required>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="cardExpiry">Expiry Date</label>
+                                    <input type="text" id="cardExpiry" placeholder="MM/YY" pattern="[0-9]{2}/[0-9]{2}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="cardCVV">CVV</label>
+                                    <input type="text" id="cardCVV" placeholder="123" pattern="[0-9]{3,4}" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 2rem;">Complete Payment</button>
+                    </form>
+                </div>
+
+                <!-- Order Summary -->
+                <div>
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 class="card-title">Order Summary</h3>
+                            <div id="orderSummary" style="margin: 2rem 0;">
+                                <!-- Summary will be loaded here -->
+                            </div>
+
+                            <button class="btn btn-outline" style="width: 100%;" onclick="window.location.href='cart.html'">Back to Cart</button>
+                        </div>
+                    </div>
+
+                    <div class="card mt-2">
+                        <div class="card-body">
+                            <h4 style="color: var(--primary-gold); margin-bottom: 1rem;">Security Notice</h4>
+                            <p class="text-muted" style="font-size: 0.9rem;">Your payment information is encrypted and secure. We use industry-standard SSL encryption to protect your data.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>About Us</h4>
+                    <p>Suvan Ventures Company Limited is a leading technology solutions provider.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="products.html">Products</a></li>
+                        <li><a href="services.html">Services</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Suvan Ventures Company Limited. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/common.js"></script>
+    <script>
+        let currentOrder = null;
+
+        async function loadOrderInfo() {
+            const auth = await checkAuth();
+            if (!auth.data.logged_in) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const result = await checkout();
+            if (result.success) {
+                currentOrder = result.data;
+                displayOrderInfo(result.data);
+            } else {
+                showAlert('Error creating order. Please try again.', 'danger');
+                window.location.href = 'cart.html';
+            }
+        }
+
+        function displayOrderInfo(order) {
+            const orderInfoDiv = document.getElementById('orderInfo');
+            orderInfoDiv.innerHTML = `
+                <p><strong>Order Number:</strong> ${order.order_number}</p>
+                <p><strong>Order Date:</strong> ${formatDate(new Date())}</p>
+                <p><strong>Total Amount:</strong> <span style="color: var(--primary-gold); font-weight: 700; font-size: 1.2rem;">${formatCurrency(order.total_amount)}</span></p>
+            `;
+
+            const summaryDiv = document.getElementById('orderSummary');
+            let summaryHTML = '';
+            order.items.forEach(item => {
+                const itemName = item.type === 'product' ? 'Product' : 'Service';
+                const subtotal = item.price * item.quantity;
+                summaryHTML += `
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
+                        <span>${item.type === 'product' ? item.product_id : item.service_id} x${item.quantity}</span>
+                        <span>${formatCurrency(subtotal)}</span>
+                    </div>
+                `;
+            });
+            summaryHTML += `
+                <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 1.2rem; color: var(--primary-gold);">
+                    <span>Total:</span>
+                    <span>${formatCurrency(order.total_amount)}</span>
+                </div>
+            `;
+            summaryDiv.innerHTML = summaryHTML;
+        }
+
+        document.getElementById('paymentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+            let transactionId = 'TXN-' + Date.now();
+
+            // For demo purposes, we'll simulate the payment
+            if (paymentMethod === 'credit_card') {
+                const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
+                if (cardNumber.length < 13) {
+                    showAlert('Invalid card number', 'danger');
+                    return;
+                }
+                // Mock transaction ID from card
+                transactionId = 'CARD-' + cardNumber.slice(-4) + '-' + Date.now();
+            }
+
+            const result = await processPayment(currentOrder.order_id, currentOrder.total_amount, paymentMethod, transactionId);
+
+            if (result.success) {
+                showAlert('Payment successful! Your order has been confirmed.', 'success');
+                setTimeout(() => {
+                    window.location.href = 'order-confirmation.html?order=' + currentOrder.order_number;
+                }, 2000);
+            } else {
+                showAlert('Payment failed. Please try again.', 'danger');
+            }
+        });
+
+        document.querySelector('input[name="paymentMethod"]').addEventListener('change', (e) => {
+            const cardForm = document.getElementById('cardForm');
+            if (e.target.value === 'credit_card') {
+                cardForm.style.display = 'block';
+                document.getElementById('cardName').required = true;
+                document.getElementById('cardNumber').required = true;
+                document.getElementById('cardExpiry').required = true;
+                document.getElementById('cardCVV').required = true;
+            } else {
+                cardForm.style.display = 'none';
+                document.getElementById('cardName').required = false;
+                document.getElementById('cardNumber').required = false;
+                document.getElementById('cardExpiry').required = false;
+                document.getElementById('cardCVV').required = false;
+            }
+        });
+
+        loadOrderInfo();
+    </script>
+</body>
+</html>
