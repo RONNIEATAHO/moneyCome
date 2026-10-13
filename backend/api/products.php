@@ -17,7 +17,18 @@ if ($method === 'POST' && !isset($action)) {
     $action = $data['action'] ?? '';
 }
 
-if ($method === 'GET' && $action === 'get_all') {
+if ($method === 'GET' && $action === 'get_all_admin') {
+    requireAdmin();
+    $sql = "SELECT * FROM products ORDER BY created_at DESC";
+    $result = $conn->query($sql);
+    $products = [];
+    while ($row = $result->fetch_assoc()) {
+        $products[] = $row;
+    }
+    sendJsonResponse(getSuccessResponse($products));
+}
+
+elseif ($method === 'GET' && $action === 'get_all') {
     $sql = "SELECT * FROM products WHERE status = 'active' ORDER BY created_at DESC";
     $result = $conn->query($sql);
     $products = [];

@@ -1,6 +1,9 @@
 <?php
 // Authentication functions
 session_start();
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
+header('Expires: 0');
 
 // Function to check if user is logged in
 function isLoggedIn() {
@@ -36,6 +39,7 @@ function loginUser($conn, $email, $password) {
     
     if ($result->num_rows === 1) {
         $user = $result->fetch_assoc();
+        session_regenerate_id(true);
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['user_email'] = $user['email'];
         $_SESSION['user_name'] = $user['first_name'];
@@ -47,9 +51,22 @@ function loginUser($conn, $email, $password) {
 
 // Function to logout user
 function logoutUser() {
+    $_SESSION = [];
+
+    if (ini_get('session.use_cookies')) {
+        $cookie_params = session_get_cookie_params();
+        setcookie(
+            session_name(),
+            '',
+            time() - 42000,
+            $cookie_params['path'],
+            $cookie_params['domain'],
+            $cookie_params['secure'],
+            $cookie_params['httponly']
+        );
+    }
+
     session_destroy();
-    header("Location: " . BASE_URL . "/public/index.html");
-    exit;
 }
 
 // Function to register user
@@ -72,7 +89,7 @@ function registerUser($conn, $email, $password, $first_name, $last_name, $phone)
 // Require login middleware
 function requireLogin() {
     if (!isLoggedIn()) {
-        header("Location: " . BASE_URL . "/public/login.html");
+        header("Location: " . BASE_URL . "/public/index.html?auth=login");
         exit;
     }
 }

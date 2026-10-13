@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shopping Cart - Suvan Ventures</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/styles.css?v=20261012-background">
 </head>
 <body>
     <!-- Navbar -->
     <nav class="navbar">
         <div class="container">
-            <div class="navbar-logo"><img src="images/sv.jpeg" alt="Suvan Ventures" style="height: 50px;"></div>
+            <div class="navbar-logo"><img src="images/sv.jpeg" alt="Suvan Ventures"></div>
             <ul class="navbar-menu">
                 <li><a href="index.html">Home</a></li>
                 <li><a href="products.html">Products</a></li>
@@ -18,7 +18,6 @@
                 <li><a href="contact.html">Contact</a></li>
             </ul>
             <div class="navbar-auth">
-                <a href="cart.html" class="navbar-icon active" title="Cart">🛒</a>
             </div>
         </div>
     </nav>
@@ -35,7 +34,7 @@
     <section class="section">
         <div class="container">
             <div id="loginAlert" style="display: none;" class="alert alert-warning">
-                Please <a href="login.html">login</a> to view your cart.
+                Please <a href="index.html?auth=login">login</a> to view your cart.
             </div>
 
             <div id="cartContainer" style="display: none;">
@@ -85,7 +84,7 @@
                                 </div>
 
                                 <button onclick="proceedToCheckout()" class="btn btn-primary" style="width: 100%; padding: 1rem;">Proceed to Checkout</button>
-                                <a href="products.html" class="btn btn-secondary" style="width: 100%; padding: 1rem; border: 1px solid var(--border-color); color: var(--primary-dark); margin-top: 1rem; display: block; text-align: center;">Continue Shopping</a>
+                                <a href="products.html" class="btn continue-shopping-button" style="width: 100%; padding: 1rem; margin-top: 1rem; display: block; text-align: center;">Continue Shopping</a>
                                 <button onclick="clearCartItems()" class="btn btn-outline" style="width: 100%; padding: 1rem; margin-top: 1rem;">Clear Cart</button>
                             </div>
                         </div>
@@ -123,20 +122,25 @@
         async function loadCart() {
             const auth = await checkAuth();
             if (!auth.data || !auth.data.logged_in) {
-                document.getElementById('loginAlert').style.display = 'block';
-                document.getElementById('cartContainer').style.display = 'none';
+                window.location.replace('index.html?auth=login');
                 return;
             }
 
             document.getElementById('cartContainer').style.display = 'block';
             const result = await getCart();
             
-            if (result.success && result.data && result.data.items.length > 0) {
+            if (result.success && result.data && Array.isArray(result.data.items) && result.data.items.length > 0) {
                 displayCartItems(result.data.items, result.data.total);
                 document.getElementById('emptyCart').style.display = 'none';
-            } else {
+            } else if (result.success && result.data && Array.isArray(result.data.items)) {
+                document.getElementById('cartItems').replaceChildren();
                 document.getElementById('emptyCart').style.display = 'block';
+            } else {
+                document.getElementById('cartItems').replaceChildren();
+                document.getElementById('emptyCart').style.display = 'none';
+                showAlert(result.message || 'Unable to load your cart. Please try again.', 'danger');
             }
+            await refreshNavbarCartCount();
         }
 
         function displayCartItems(items, total) {
@@ -207,13 +211,15 @@
         }
 
         async function proceedToCheckout() {
+            const checkoutButton = document.querySelector('[onclick="proceedToCheckout()"]');
+            checkoutButton.disabled = true;
             const result = await checkout();
-            if (result.success) {
-                // Redirect to payment page
-                window.location.href = `payment.html?order_id=${result.data.order_id}`;
-            } else {
-                showAlert('Failed to create order. Please try again.', 'danger');
+            if (!result.success) {
+                showAlert(result.message || 'Failed to create order. Please try again.', 'danger');
+                checkoutButton.disabled = false;
+                return;
             }
+            window.location.href = `payment.html?order_id=${result.data.order_id}`;
         }
 
         loadCart();

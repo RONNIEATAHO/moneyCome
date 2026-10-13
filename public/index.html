@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Suvan Ventures - Home</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/styles.css?v=20261012-background">
 </head>
 <body>
     <!-- Navbar -->
     <nav class="navbar">
         <div class="container">
-            <div class="navbar-logo"><img src="images/sv.jpeg" alt="Suvan Ventures" style="height: 50px;"></div>
+            <div class="navbar-logo"><img src="images/sv.jpeg" alt="Suvan Ventures"></div>
             <ul class="navbar-menu">
                 <li><a href="index.html" class="active">Home</a></li>
                 <li><a href="products.html">Products</a></li>
@@ -18,7 +18,6 @@
                 <li><a href="contact.html">Contact</a></li>
             </ul>
             <div class="navbar-auth">
-                <a href="cart.html" class="navbar-icon" title="Cart">🛒</a>
                 <!-- Auth links will be populated by JavaScript -->
             </div>
         </div>
@@ -64,42 +63,8 @@
     <section class="section">
         <div class="container">
             <h2 class="section-title">Our Services</h2>
-            <div class="grid">
-                <div class="card">
-                    <div class="card-image" style="background-image: url('images/web.png'); background-size: cover; background-position: center;"></div>
-                    <div class="card-body">
-                        <h3 class="card-title">🌐 Website Development</h3>
-                        <p class="card-text">Professional website design and development tailored to your business needs.</p>
-                        <p class="text-muted"><em>Starting from $500</em></p>
-                    </div>
-                    <div class="card-footer">
-                        <a href="services.html" class="btn btn-primary btn-small">View Details</a>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-image" style="background-image: url('images/WhatsApp Image 2026-10-08 at 16.40.49 (1).jpeg'); background-size: cover; background-position: center;"></div>
-                    <div class="card-body">
-                        <h3 class="card-title">🔗 Networking Solutions</h3>
-                        <p class="card-text">Robust networking infrastructure setup and maintenance for your organization.</p>
-                        <p class="text-muted"><em>Starting from $800</em></p>
-                    </div>
-                    <div class="card-footer">
-                        <a href="services.html" class="btn btn-primary btn-small">View Details</a>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-image" style="background-image: url('images/securityCamera.jpeg'); background-size: cover; background-position: center;"></div>
-                    <div class="card-body">
-                        <h3 class="card-title">📹 CCTV Camera Installation</h3>
-                        <p class="card-text">Professional security camera installation and surveillance system setup.</p>
-                        <p class="text-muted"><em>Starting from $1,200</em></p>
-                    </div>
-                    <div class="card-footer">
-                        <a href="services.html" class="btn btn-primary btn-small">View Details</a>
-                    </div>
-                </div>
+            <div id="featured-services" class="grid home-catalog-grid" aria-live="polite">
+                <!-- Services are loaded from the database -->
             </div>
         </div>
     </section>
@@ -109,8 +74,8 @@
         <div class="container">
             <h2 class="section-title">Featured Products</h2>
             <p style="text-align: center; margin-bottom: 2rem; color: var(--text-light);">Premium electronics and business tools built for performance</p>
-            <div id="featured-products" class="grid">
-                <!-- Products will be loaded here by JavaScript -->
+            <div id="featured-products" class="grid home-catalog-grid" aria-live="polite">
+                <!-- Products are loaded from the database -->
             </div>
         </div>
     </section>
@@ -160,7 +125,7 @@
         <div class="container text-center">
             <h2>Ready to Get Started?</h2>
             <p style="font-size: 1.1rem; margin-bottom: 2rem; color: var(--text-light);">Create your account or sign in to access our services, products, and support.</p>
-            <a href="login.html?mode=register" class="btn btn-primary">Start Your Journey</a>
+            <a href="index.html?auth=signup" class="btn btn-primary">Start Your Journey</a>
         </div>
     </section>
 
@@ -203,42 +168,106 @@
         </div>
     </footer>
 
-    <script src="js/common.js"></script>
+    <script src="js/common.js?v=20261012-dedicated-booking"></script>
     <script>
-        async function loadFeaturedProducts() {
-            const result = await getAllProducts();
-            if (result.success && result.data && result.data.length > 0) {
-                const container = document.getElementById('featured-products');
-                container.innerHTML = '';
-                
-                result.data.slice(0, 3).forEach((product, index) => {
-                    const images = [
-                        'images/WhatsApp Image 2026-10-08 at 16.40.51 (1).jpeg',
-                        'images/WhatsApp Image 2026-10-08 at 16.40.49 (1).jpeg',
-                        'images/WhatsApp Image 2026-10-08 at 16.40.58 (1).jpeg'
-                    ];
-                    const productCard = `
-                        <div class="card">
-                            <div class="card-image" style="background-image: url('${images[index % images.length]}'); background-size: cover; background-position: center;"></div>
-                            <div class="card-body">
-                                <h3 class="card-title">${product.name}</h3>
-                                <p class="card-text">${product.description.substring(0, 100)}...</p>
-                                <div class="card-price">${formatCurrency(product.price)}</div>
-                                <p class="text-muted">Stock: ${product.stock_quantity}</p>
-                            </div>
-                            <div class="card-footer">
-                                <a href="products.html" class="btn btn-primary btn-small" style="flex-grow: 1;">View</a>
-                            </div>
-                        </div>
-                    `;
-                    container.innerHTML += productCard;
-                });
-            } else {
-                document.getElementById('featured-products').innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No products available yet.</p>';
+        function createHomeCatalogCard(item, type) {
+            const card = document.createElement('a');
+            card.className = 'card home-catalog-card';
+            card.href = type === 'product' ? 'products.html' : 'services.html';
+            card.setAttribute('aria-label', `Browse ${item.name} in ${type === 'product' ? 'products' : 'services'}`);
+
+            const image = document.createElement('img');
+            image.className = 'card-image home-catalog-image';
+            image.src = type === 'product' ? getProductImageUrl(item) : getServiceImageUrl(item);
+            image.alt = item.name;
+            card.appendChild(image);
+
+            const body = document.createElement('div');
+            body.className = 'card-body home-catalog-body';
+
+            const title = document.createElement('h3');
+            title.className = 'card-title home-catalog-title';
+            title.textContent = item.name;
+            body.appendChild(title);
+
+            const description = document.createElement('p');
+            description.className = 'card-text home-catalog-description';
+            description.textContent = item.description || '';
+            body.appendChild(description);
+
+            const price = document.createElement('p');
+            price.className = 'card-price home-catalog-price';
+            price.textContent = type === 'product'
+                ? formatCurrency(Number(item.discount_price || item.price))
+                : `From ${formatServiceCurrency(Number(item.price))}`;
+            body.appendChild(price);
+            card.appendChild(body);
+
+            return card;
+        }
+
+        function renderHomeCatalog(containerId, items, type, errorMessage) {
+            const container = document.getElementById(containerId);
+            container.replaceChildren();
+
+            if (errorMessage) {
+                const message = document.createElement('p');
+                message.className = 'home-catalog-message';
+                message.textContent = errorMessage;
+                container.appendChild(message);
+                return;
+            }
+
+            const columnCount = getComputedStyle(container).gridTemplateColumns.split(' ').filter(Boolean).length;
+            items.slice(0, Math.max(1, columnCount - 1)).forEach(item => {
+                container.appendChild(createHomeCatalogCard(item, type));
+            });
+
+            const moreLink = document.createElement('a');
+            moreLink.className = 'home-catalog-more';
+            moreLink.href = type === 'product' ? 'products.html' : 'services.html';
+            moreLink.setAttribute('aria-label', `See all ${type === 'product' ? 'products' : 'services'}`);
+            moreLink.innerHTML = '<span aria-hidden="true">→</span><strong>See all</strong>';
+            container.appendChild(moreLink);
+        }
+
+        let homeCatalogResults = null;
+
+        function renderHomeCatalogs() {
+            if (!homeCatalogResults) return;
+
+            const { productsResult, servicesResult } = homeCatalogResults;
+            renderHomeCatalog(
+                'featured-products',
+                productsResult.success && Array.isArray(productsResult.data) ? productsResult.data : [],
+                'product',
+                productsResult.success ? '' : productsResult.message || 'Products are unavailable right now.'
+            );
+            renderHomeCatalog(
+                'featured-services',
+                servicesResult.success && Array.isArray(servicesResult.data) ? servicesResult.data : [],
+                'service',
+                servicesResult.success ? '' : servicesResult.message || 'Services are unavailable right now.'
+            );
+        }
+
+        async function loadHomeCatalog() {
+            try {
+                const [productsResult, servicesResult] = await Promise.all([
+                    getAllProducts(),
+                    getAllServices()
+                ]);
+                homeCatalogResults = { productsResult, servicesResult };
+                renderHomeCatalogs();
+            } catch (error) {
+                console.error('Unable to load homepage catalog:', error);
+                renderHomeCatalog('featured-products', [], 'product', 'Unable to load products right now.');
+                renderHomeCatalog('featured-services', [], 'service', 'Unable to load services right now.');
             }
         }
 
-        loadFeaturedProducts();
+        loadHomeCatalog();
+        window.addEventListener('resize', renderHomeCatalogs);
     </script>
 
     <!-- Auth Modal -->
@@ -261,7 +290,10 @@
 
                     <div class="auth-form-group">
                         <label for="modalLoginPassword">Password</label>
-                        <input type="password" id="modalLoginPassword" name="password" required>
+                        <div class="auth-password-field">
+                            <input type="password" id="modalLoginPassword" name="password" required>
+                            <button type="button" class="auth-password-toggle" data-password-toggle="modalLoginPassword" aria-controls="modalLoginPassword" aria-label="Show password">Show</button>
+                        </div>
                     </div>
 
                     <div class="auth-checkbox-group">
@@ -318,13 +350,30 @@
                     </div>
 
                     <div class="auth-form-group">
+                        <label for="modalAccountType">Account type</label>
+                        <select id="modalAccountType" name="account_type" required>
+                            <option value="customer">Customer</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                        <p id="adminSignupNotice" class="auth-field-notice" hidden>
+                            Admin accounts must be created by an existing system administrator. Please contact your administrator.
+                        </p>
+                    </div>
+
+                    <div class="auth-form-group">
                         <label for="modalSignupPassword">Password</label>
-                        <input type="password" id="modalSignupPassword" name="password" required>
+                        <div class="auth-password-field">
+                            <input type="password" id="modalSignupPassword" name="password" required>
+                            <button type="button" class="auth-password-toggle" data-password-toggle="modalSignupPassword" aria-controls="modalSignupPassword" aria-label="Show password">Show</button>
+                        </div>
                     </div>
 
                     <div class="auth-form-group">
                         <label for="modalConfirmPassword">Confirm password</label>
-                        <input type="password" id="modalConfirmPassword" name="confirm_password" required>
+                        <div class="auth-password-field">
+                            <input type="password" id="modalConfirmPassword" name="confirm_password" required>
+                            <button type="button" class="auth-password-toggle" data-password-toggle="modalConfirmPassword" aria-controls="modalConfirmPassword" aria-label="Show confirm password">Show</button>
+                        </div>
                     </div>
 
                     <button type="submit" class="auth-submit-btn">Create account</button>
@@ -339,30 +388,44 @@
 
     <script>
         // Auth Modal Functions
-        function openAuthModal() {
+        function openAuthModal(tab = 'login') {
+            switchAuthTab(tab);
             document.getElementById('authModal').classList.add('open');
             document.body.style.overflow = 'hidden';
         }
 
         function closeAuthModal() {
+            hidePasswordFields();
             document.getElementById('authModal').classList.remove('open');
             document.body.style.overflow = 'auto';
         }
 
+        function hidePasswordFields() {
+            document.querySelectorAll('[data-password-toggle]').forEach((button) => {
+                const passwordInput = document.getElementById(button.dataset.passwordToggle);
+                passwordInput.type = 'password';
+                button.textContent = 'Show';
+                button.setAttribute(
+                    'aria-label',
+                    `Show ${passwordInput.id === 'modalConfirmPassword' ? 'confirm password' : 'password'}`
+                );
+            });
+        }
+
         function switchAuthTab(tab) {
+            hidePasswordFields();
             const loginForm = document.getElementById('modalLoginForm');
             const signupForm = document.getElementById('modalSignupForm');
-            const tabs = document.querySelectorAll('.auth-tab');
-
-            tabs.forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
+            const title = document.getElementById('authModalTitle');
 
             if (tab === 'login') {
                 loginForm.classList.add('active');
                 signupForm.classList.remove('active');
-            } else {
+                title.textContent = 'Sign in';
+            } else if (tab === 'signup') {
                 signupForm.classList.add('active');
                 loginForm.classList.remove('active');
+                title.textContent = 'Create your account';
             }
         }
 
@@ -377,10 +440,21 @@
             if (result.success) {
                 showAlert('Login successful! Redirecting...', 'success');
                 setTimeout(() => {
+                    const returnTo = new URLSearchParams(window.location.search).get('return_to');
+                    const bookingReturn = returnTo && returnTo.match(/^booking\.html\?service_id=(\d+)$/);
+                    const legacyBookingReturn = returnTo && returnTo.match(/^services\.html\?book_service=(\d+)$/);
+                    if (bookingReturn) {
+                        window.location.href = returnTo;
+                        return;
+                    }
+                    if (legacyBookingReturn) {
+                        window.location.href = `booking.html?service_id=${legacyBookingReturn[1]}`;
+                        return;
+                    }
                     if (result.data.user_role === 'admin' || result.data.user_role === 'system_admin') {
                         window.location.href = '../backend/admin/admin-dashboard.html';
                     } else {
-                        window.location.href = 'index.html';
+                        window.location.href = 'products.html';
                     }
                 }, 1200);
             } else {
@@ -388,9 +462,37 @@
             }
         });
 
+        document.getElementById('modalAccountType').addEventListener('change', (e) => {
+            document.getElementById('adminSignupNotice').hidden = e.target.value !== 'admin';
+        });
+
+        document.querySelectorAll('[data-password-toggle]').forEach((button) => {
+            const passwordInput = document.getElementById(button.dataset.passwordToggle);
+
+            button.addEventListener('click', () => {
+                const showPassword = passwordInput.type === 'password';
+                passwordInput.type = showPassword ? 'text' : 'password';
+                button.textContent = showPassword ? 'Hide' : 'Show';
+                button.setAttribute(
+                    'aria-label',
+                    `${showPassword ? 'Hide' : 'Show'} ${passwordInput.id === 'modalConfirmPassword' ? 'confirm password' : 'password'}`
+                );
+            });
+        });
+
+        document.getElementById('modalSignupForm').addEventListener('reset', () => {
+            hidePasswordFields();
+            document.getElementById('adminSignupNotice').hidden = true;
+        });
+
         // Modal Signup Form Handler
         document.getElementById('modalSignupForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+
+            if (document.getElementById('modalAccountType').value === 'admin') {
+                showAlert('Admin accounts must be created by an existing system administrator.', 'warning');
+                return;
+            }
 
             const password = document.getElementById('modalSignupPassword').value;
             const confirmPassword = document.getElementById('modalConfirmPassword').value;
@@ -414,15 +516,20 @@
             );
 
             if (result.success) {
-                showAlert('Account created! Please log in.', 'success');
-                setTimeout(() => {
-                    switchAuthTab('login');
-                    document.getElementById('modalLoginEmail').value = document.getElementById('modalSignupEmail').value;
-                }, 1200);
+                const email = document.getElementById('modalSignupEmail').value;
+                document.getElementById('modalSignupForm').reset();
+                document.getElementById('modalLoginEmail').value = email;
+                switchAuthTab('login');
+                showAlert('Account created! Please sign in to continue.', 'success');
             } else {
                 showAlert(result.message, 'danger');
             }
         });
+
+        const requestedAuthMode = new URLSearchParams(window.location.search).get('auth');
+        if (requestedAuthMode === 'login' || requestedAuthMode === 'signup') {
+            openAuthModal(requestedAuthMode);
+        }
 
         // Close modal on escape key
         document.addEventListener('keydown', (e) => {

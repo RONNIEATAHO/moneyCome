@@ -8,56 +8,86 @@ $method = $_SERVER['REQUEST_METHOD'];
 $action = isset($_GET['action']) ? $_GET['action'] : '';
 
 if ($method === 'POST') {
-    $data = json_decode(file_get_contents("php://input"), true);
-    $action = $data['action'] ?? '';
+    $data = json_decode(file_get_contents("php://input"), true) ?? [];
+    $action = $data['action'] ?? $action;
 }
 
 if ($method === 'POST' && $action === 'checkout') {
     requireLogin();
     
     $user_id = $_SESSION['user_id'];
-    
-    // Get cart items
-    $cart_sql = "SELECT * FROM cart WHERE user_id = $user_id";
+    $cart_sql = "SELECT * FROM cart WHERE user_id = $user_id ORDER BY added_at";
     $cart_result = $conn->query($cart_sql);
     
+    if (!$cart_result) {
+        sendJsonResponse(getErrorResponse('Unable to read cart: ' . $conn->error));
+    }
     if ($cart_result->num_rows === 0) {
         sendJsonResponse(getErrorResponse('Cart is empty'));
     }
     
-    // Calculate total
-    $total = 0;
+    $subtotal = 0;
     $items = [];
     while ($item = $cart_result->fetch_assoc()) {
         $items[] = $item;
-        $total += $item['price'] * $item['quantity'];
+        $subtotal += (float)$item['price'] * (int)$item['quantity'];
     }
+    $total = round($subtotal * 1.05, 2);
     
-    // Create order
     $order_number = generateOrderNumber();
-    $order_sql = "INSERT INTO orders (user_id, order_number, total_amount) VALUES ($user_id, '$order_number', $total)";
-    
-    if ($conn->query($order_sql)) {
-        $order_id = $conn->insert_id;
-        
-        // Add order items
-        foreach ($items as $item) {
-            $product_id = $item['product_id'] ? $item['product_id'] : 'NULL';
-            $service_id = $item['service_id'] ? $item['service_id'] : 'NULL';
-            $insert_sql = "INSERT INTO order_items (order_id, product_id, service_id, quantity, unit_price, type) 
-                          VALUES ($order_id, $product_id, $service_id, {$item['quantity']}, {$item['price']}, '{$item['type']}')";
-            $conn->query($insert_sql);
-        }
-        
-        sendJsonResponse(getSuccessResponse([
-            'order_id' => $order_id,
-            'order_number' => $order_number,
-            'total_amount' => $total,
-            'items' => $items
-        ]));
-    } else {
-        sendJsonResponse(getErrorResponse('Failed to create order'));
+    if (!$conn->begin_transaction()) {
+        sendJsonResponse(getErrorResponse('Unable to start checkout: ' . $conn->error));
     }
+
+    $order_statement = $conn->prepare(
+        'INSERT INTO orders (user_id, order_number, total_amount) VALUES (?, ?, ?)'
+    );
+    if (!$order_statement) {
+        $conn->rollback();
+        sendJsonResponse(getErrorResponse('Unable to prepare order: ' . $conn->error));
+    }
+    $order_statement->bind_param('isd', $user_id, $order_number, $total);
+    if (!$order_statement->execute()) {
+        $error = $order_statement->error;
+        $conn->rollback();
+        sendJsonResponse(getErrorResponse('Failed to create order: ' . $error));
+    }
+
+    $order_id = $conn->insert_id;
+    $item_statement = $conn->prepare(
+        'INSERT INTO order_items (order_id, product_id, service_id, quantity, unit_price, type) VALUES (?, ?, ?, ?, ?, ?)'
+    );
+    if (!$item_statement) {
+        $conn->rollback();
+        sendJsonResponse(getErrorResponse('Unable to prepare order items: ' . $conn->error));
+    }
+
+    foreach ($items as $item) {
+        $product_id = $item['product_id'] !== null ? (int)$item['product_id'] : null;
+        $service_id = $item['service_id'] !== null ? (int)$item['service_id'] : null;
+        $quantity = (int)$item['quantity'];
+        $unit_price = (float)$item['price'];
+        $type = $item['type'];
+        $item_statement->bind_param('iiiids', $order_id, $product_id, $service_id, $quantity, $unit_price, $type);
+        if (!$item_statement->execute()) {
+            $error = $item_statement->error;
+            $conn->rollback();
+            sendJsonResponse(getErrorResponse('Failed to save order items: ' . $error));
+        }
+    }
+
+    if (!$conn->commit()) {
+        $error = $conn->error;
+        $conn->rollback();
+        sendJsonResponse(getErrorResponse('Unable to complete checkout: ' . $error));
+    }
+
+    sendJsonResponse(getSuccessResponse([
+        'order_id' => $order_id,
+        'order_number' => $order_number,
+        'total_amount' => $total,
+        'items' => $items
+    ]));
 }
 
 elseif ($method === 'GET' && $action === 'get_orders') {

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book a Service - Suvan Ventures</title>
+    <link rel="stylesheet" href="css/styles.css?v=20261012-background">
+</head>
+<body class="booking-page">
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-logo"><img src="images/sv.jpeg" alt="Suvan Ventures"></div>
+            <ul class="navbar-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="products.html">Products</a></li>
+                <li><a href="services.html" class="active">Services</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+            <div class="navbar-auth"></div>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="container">
+            <h1>Book a Service</h1>
+            <p>Tell us what you need and when you need it.</p>
+        </div>
+    </section>
+
+    <main class="section">
+        <div class="container">
+            <p id="bookingPageMessage" class="text-center" aria-live="polite">Checking your account...</p>
+            <div id="bookingPageContent" class="booking-page-layout" hidden>
+                <aside class="card booking-detail-card">
+                    <img id="bookingServiceImage" class="booking-detail-image" alt="">
+                    <div class="card-body">
+                        <p id="bookingServiceCategory" class="text-muted"></p>
+                        <h2 id="bookingServiceName" class="card-title"></h2>
+                        <p id="bookingServiceDescription" class="card-text"></p>
+                        <div class="booking-price-line">
+                            <span>Service price</span>
+                            <strong id="bookingServicePrice"></strong>
+                        </div>
+                        <div class="booking-price-line booking-deposit-line">
+                            <span>Required 20% deposit</span>
+                            <strong id="bookingDepositAmount"></strong>
+                        </div>
+                    </div>
+                </aside>
+
+                <section class="card booking-form-card">
+                    <div class="card-body">
+                        <h2>Booking details</h2>
+                        <form id="bookingForm">
+                            <div class="form-group">
+                                <label for="bookingDateTime">When is the service required?</label>
+                                <input id="bookingDateTime" type="datetime-local" required>
+                                <small id="bookingDateTimeError" class="booking-field-error" aria-live="polite"></small>
+                                <small>Choose a time at least 2 hours from now and within the next 60 days.</small>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="bookingEmail">Contact email</label>
+                                    <input id="bookingEmail" type="email" autocomplete="email" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="bookingPhone">Contact phone</label>
+                                    <input id="bookingPhone" type="tel" autocomplete="tel" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="bookingLocation">Service location</label>
+                                <input id="bookingLocation" type="text" autocomplete="street-address" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="bookingUrgency">Urgency</label>
+                                <select id="bookingUrgency" required>
+                                    <option value="">Select urgency</option>
+                                    <option value="low">Low - flexible timing</option>
+                                    <option value="normal">Normal</option>
+                                    <option value="high">High - as soon as possible</option>
+                                    <option value="urgent">Urgent</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="bookingNotes">Specific information for the service team</label>
+                                <textarea id="bookingNotes" rows="5" placeholder="Describe your requirements, access instructions, or other details"></textarea>
+                            </div>
+                            <fieldset class="form-group booking-payment-methods">
+                                <legend>Preferred deposit payment method</legend>
+                                <label><input type="radio" name="bookingPaymentMethod" value="mtn_mobile_money" checked> MTN Mobile Money</label>
+                                <label><input type="radio" name="bookingPaymentMethod" value="airtel_money"> Airtel Money</label>
+                                <label><input type="radio" name="bookingPaymentMethod" value="paypal"> PayPal</label>
+                            </fieldset>
+                            <p class="booking-payment-notice">
+                                Online booking and deposits are unavailable until merchant payment providers are connected.
+                                This page does not save a booking or charge you. Never enter a wallet PIN on this website.
+                            </p>
+                            <button type="submit" class="btn btn-primary" style="width: 100%;" disabled>Booking unavailable - payment setup required</button>
+                        </form>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2024 Suvan Ventures Company Limited. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/common.js?v=20261012-dedicated-booking"></script>
+    <script>
+        function toLocalDateTimeInputValue(date) {
+            const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+            return localDate.toISOString().slice(0, 16);
+        }
+
+        async function loadBookingPage() {
+            const message = document.getElementById('bookingPageMessage');
+            const params = new URLSearchParams(window.location.search);
+            const serviceId = params.get('service_id');
+
+            if (!serviceId || !/^\d+$/.test(serviceId)) {
+                message.textContent = 'Choose a service from the services page to start a booking.';
+                return;
+            }
+
+            const auth = await checkAuth();
+            if (!auth.success) {
+                message.textContent = auth.message || 'Unable to check your sign-in status. Please refresh and try again.';
+                return;
+            }
+            if (!auth.data || !auth.data.logged_in) {
+                const returnTo = `booking.html?service_id=${serviceId}`;
+                window.location.replace(`index.html?auth=login&return_to=${encodeURIComponent(returnTo)}`);
+                return;
+            }
+
+            const servicesResult = await getAllServices();
+            if (!servicesResult.success || !Array.isArray(servicesResult.data)) {
+                message.textContent = servicesResult.message || 'Unable to load service details.';
+                return;
+            }
+
+            const service = servicesResult.data.find(item => Number(item.id) === Number(serviceId));
+            if (!service) {
+                message.textContent = 'This service is no longer available.';
+                return;
+            }
+
+            document.getElementById('bookingServiceImage').src = getServiceImageUrl(service);
+            document.getElementById('bookingServiceImage').alt = service.name;
+            document.getElementById('bookingServiceCategory').textContent = service.category;
+            document.getElementById('bookingServiceName').textContent = service.name;
+            document.getElementById('bookingServiceDescription').textContent = service.description;
+            document.getElementById('bookingServicePrice').textContent = formatServiceCurrency(Number(service.price));
+            document.getElementById('bookingDepositAmount').textContent = formatServiceCurrency(Number(service.price) * 0.2);
+
+            const now = new Date();
+            document.getElementById('bookingDateTime').min = toLocalDateTimeInputValue(new Date(now.getTime() + 2 * 60 * 60 * 1000));
+            document.getElementById('bookingDateTime').max = toLocalDateTimeInputValue(new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000));
+
+            const profileResult = await getUserProfile();
+            if (profileResult.success && profileResult.data) {
+                document.getElementById('bookingEmail').value = profileResult.data.email || '';
+                document.getElementById('bookingPhone').value = profileResult.data.phone || '';
+                document.getElementById('bookingLocation').value = profileResult.data.address || '';
+            }
+
+            message.hidden = true;
+            document.getElementById('bookingPageContent').hidden = false;
+        }
+
+        document.getElementById('bookingDateTime').addEventListener('input', event => {
+            const selected = new Date(event.target.value);
+            document.getElementById('bookingDateTimeError').textContent =
+                Number.isNaN(selected.getTime()) ? '' :
+                    selected.getTime() < Date.now() + 2 * 60 * 60 * 1000
+                        ? 'Choose a time at least 2 hours from now.'
+                        : selected.getTime() > Date.now() + 60 * 24 * 60 * 60 * 1000
+                            ? 'Choose a time within the next 60 days.'
+                            : '';
+        });
+
+        document.getElementById('bookingForm').addEventListener('submit', event => {
+            event.preventDefault();
+            showAlert('Booking is unavailable until payment providers are configured.', 'warning');
+        });
+
+        loadBookingPage();
+    </script>
+</body>
+</html>

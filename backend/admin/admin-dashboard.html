@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Suvan Ventures</title>
-    <link rel="stylesheet" href="../../public/css/styles.css">
+    <link rel="stylesheet" href="../../public/css/styles.css?v=20261012-background">
     <style>
         :root {
             --admin-dark: #191919;
@@ -383,6 +383,11 @@
                     <p class="stat-value" id="lowStockProducts">0</p>
                     <div class="stat-meta" id="stockMeta">Needs restock</div>
                 </div>
+                <div class="stat-card">
+                    <h4>Products</h4>
+                    <p class="stat-value" id="totalProducts">0</p>
+                    <div class="stat-meta">In your catalog</div>
+                </div>
             </div>
 
             <div class="dashboard-grid">
@@ -430,6 +435,27 @@
                     </div>
                 </div>
             </div>
+
+            <div class="panel" style="margin-top: 1.2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                    <h2 style="margin: 0;">Products</h2>
+                    <a href="admin-products.html" class="btn btn-primary">Manage Products</a>
+                </div>
+                <div style="overflow-x: auto; margin-top: 1rem;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                        <thead>
+                            <tr>
+                                <th style="padding: 0.75rem; border-bottom: 1px solid #ddd;">Product</th>
+                                <th style="padding: 0.75rem; border-bottom: 1px solid #ddd;">Category</th>
+                                <th style="padding: 0.75rem; border-bottom: 1px solid #ddd;">Price</th>
+                                <th style="padding: 0.75rem; border-bottom: 1px solid #ddd;">Stock</th>
+                                <th style="padding: 0.75rem; border-bottom: 1px solid #ddd;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashboardProducts"></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -438,7 +464,7 @@
         async function initDashboard() {
             const auth = await checkAuth();
             if (!auth.data.logged_in || (auth.data.user_role !== 'admin' && auth.data.user_role !== 'system_admin')) {
-                window.location.href = '../login.html';
+                window.location.href = '../../public/index.html?auth=login';
                 return;
             }
 
@@ -450,28 +476,40 @@
             try {
                 const [statsRes, productsRes, usersRes, ordersRes, inquiriesRes] = await Promise.all([
                     getDashboardStats(),
-                    getAllProducts(),
+                    getAllProductsForAdmin(),
                     getAllUsers(),
                     getOrders(),
                     getAllInquiries()
                 ]);
 
-                const stats = statsRes.success ? statsRes.data : {};
-                const products = productsRes.success ? productsRes.data || [] : [];
-                const users = usersRes.success ? usersRes.data || [] : [];
-                const orders = ordersRes.success ? ordersRes.data || [] : [];
-                const inquiries = inquiriesRes.success ? inquiriesRes.data || [] : [];
+                const failedRequest = [
+                    ['dashboard statistics', statsRes],
+                    ['products', productsRes],
+                    ['users', usersRes],
+                    ['orders', ordersRes],
+                    ['inquiries', inquiriesRes]
+                ].find(([, response]) => !response.success);
+                if (failedRequest) {
+                    throw new Error(`Unable to load ${failedRequest[0]}: ${failedRequest[1].message || 'request failed'}`);
+                }
+
+                const stats = statsRes.data || {};
+                const products = productsRes.data || [];
+                const activeProducts = products.filter(product => product.status === 'active');
+                const users = usersRes.data || [];
+                const orders = ordersRes.data || [];
+                const inquiries = inquiriesRes.data || [];
 
                 const customers = users.filter(user => user.role === 'customer');
                 const pendingInquiries = inquiries.filter(inquiry => inquiry.status === 'new');
-                const lowStockProducts = products.filter(product => Number(product.stock_quantity) <= 5);
+                const lowStockProducts = activeProducts.filter(product => Number(product.stock_quantity) <= 5);
                 const completedOrders = orders.filter(order => order.payment_status === 'completed' || order.order_status === 'completed');
                 const revenue = orders.reduce((sum, order) => sum + Number(order.total_amount || 0), 0);
                 const avgOrderValue = orders.length ? revenue / orders.length : 0;
                 const conversionRate = customers.length ? (completedOrders.length / customers.length) * 100 : 0;
 
                 const categoryCounts = {};
-                products.forEach(product => {
+                activeProducts.forEach(product => {
                     const key = product.category || 'Other';
                     categoryCounts[key] = (categoryCounts[key] || 0) + 1;
                 });
@@ -494,6 +532,7 @@
                 document.getElementById('pendingInquiries').textContent = pendingInquiries.length;
                 document.getElementById('conversionRate').textContent = `${Math.min(100, Math.round(conversionRate))}%`;
                 document.getElementById('lowStockProducts').textContent = lowStockProducts.length;
+                document.getElementById('totalProducts').textContent = products.length;
                 document.getElementById('newCustomers').textContent = newCustomers;
                 document.getElementById('returningBuyers').textContent = returningBuyers;
                 document.getElementById('avgOrderValue').textContent = formatCurrency(avgOrderValue);
@@ -590,6 +629,36 @@
                     </li>
                 `).join('');
 
+                const dashboardProducts = document.getElementById('dashboardProducts');
+                dashboardProducts.replaceChildren();
+                if (products.length === 0) {
+                    const row = document.createElement('tr');
+                    const cell = document.createElement('td');
+                    cell.colSpan = 5;
+                    cell.style.padding = '1rem 0.75rem';
+                    cell.textContent = 'No products have been added yet.';
+                    row.appendChild(cell);
+                    dashboardProducts.appendChild(row);
+                } else {
+                    products.slice(0, 5).forEach(product => {
+                        const row = document.createElement('tr');
+                        [
+                            product.name,
+                            product.category || 'Other',
+                            formatCurrency(Number(product.discount_price || product.price)),
+                            product.stock_quantity,
+                            product.status
+                        ].forEach(value => {
+                            const cell = document.createElement('td');
+                            cell.style.padding = '0.75rem';
+                            cell.style.borderBottom = '1px solid #eee';
+                            cell.textContent = value;
+                            row.appendChild(cell);
+                        });
+                        dashboardProducts.appendChild(row);
+                    });
+                }
+
                 if (pendingInquiries.length > 0) {
                     showAlert(`${pendingInquiries.length} pending inquiry(s) need attention`, 'warning');
                 }
@@ -598,12 +667,14 @@
                 }
             } catch (error) {
                 console.error('Dashboard load failed:', error);
-                document.getElementById('notificationList').innerHTML = `
-                    <li class="notification-item danger">
-                        <h4>Dashboard error</h4>
-                        <p>Unable to load analytics data right now. Please refresh the page.</p>
-                    </li>
-                `;
+                const notification = document.createElement('li');
+                notification.className = 'notification-item danger';
+                const title = document.createElement('h4');
+                title.textContent = 'Dashboard error';
+                const message = document.createElement('p');
+                message.textContent = `${error.message || 'Unable to load dashboard data.'} Please refresh the page.`;
+                notification.append(title, message);
+                document.getElementById('notificationList').replaceChildren(notification);
             }
         }
 

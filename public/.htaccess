@@ -12,8 +12,14 @@
 </IfModule>
 
 <IfModule mod_headers.c>
-    # Enable caching
+    # Cache static assets; HTML pages may contain account-specific content.
     Header set Cache-Control "public, max-age=3600"
+
+    <FilesMatch "\.html$">
+        Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+    </FilesMatch>
     
     # Security headers
     Header set X-Content-Type-Options "nosniff"

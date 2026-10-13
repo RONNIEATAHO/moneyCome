@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Services - Suvan Ventures</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/styles.css?v=20261012-background">
 </head>
 <body>
     <!-- Navbar -->
     <nav class="navbar">
         <div class="container">
-            <div class="navbar-logo"><img src="images/sv.jpeg" alt="Suvan Ventures" style="height: 50px;"></div>
+            <div class="navbar-logo"><img src="images/sv.jpeg" alt="Suvan Ventures"></div>
             <ul class="navbar-menu">
                 <li><a href="index.html">Home</a></li>
                 <li><a href="products.html">Products</a></li>
@@ -18,7 +18,6 @@
                 <li><a href="contact.html">Contact</a></li>
             </ul>
             <div class="navbar-auth">
-                <a href="cart.html" class="navbar-icon" title="Cart">🛒</a>
             </div>
         </div>
     </nav>
@@ -75,49 +74,95 @@
         </div>
     </footer>
 
-    <script src="js/common.js"></script>
+    <script src="js/common.js?v=20261012-dedicated-booking"></script>
     <script>
         let allServices = [];
 
         async function loadServices() {
             showLoading('services-list');
-            const result = await getAllServices();
-            if (result.success && result.data) {
+            const container = document.getElementById('services-list');
+            try {
+                const result = await getAllServices();
+                if (!result.success || !Array.isArray(result.data)) {
+                    throw new Error(result.message || 'The services API returned an invalid response.');
+                }
+
                 allServices = result.data;
                 displayServices(allServices);
-            } else {
-                document.getElementById('services-list').innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No services available.</p>';
+            } catch (error) {
+                const message = document.createElement('p');
+                message.className = 'text-center';
+                message.style.gridColumn = '1 / -1';
+                message.textContent = error.message || 'Unable to load services. Please try again later.';
+                container.replaceChildren(message);
+                console.error('Unable to load services:', error);
             }
         }
 
         function displayServices(services) {
             const container = document.getElementById('services-list');
-            container.innerHTML = '';
+            container.replaceChildren();
             
             if (services.length === 0) {
-                container.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No services found.</p>';
+                const message = document.createElement('p');
+                message.className = 'text-center';
+                message.style.gridColumn = '1 / -1';
+                message.textContent = 'No services found.';
+                container.appendChild(message);
                 return;
             }
 
             services.forEach(service => {
-                const serviceCard = `
-                    <div class="card">
-                        <div class="card-image" style="background-color: var(--primary-light-alt); display: flex; align-items: center; justify-content: center;">
-                            <span style="font-size: 3rem;">⚙️</span>
-                        </div>
-                        <div class="card-body">
-                            <h3 class="card-title">${service.name}</h3>
-                            <p class="card-text">${service.description.substring(0, 100)}...</p>
-                            <div class="card-price">${formatCurrency(service.price)}</div>
-                            <p class="text-muted">Category: ${service.category}</p>
-                        </div>
-                        <div class="card-footer">
-                            <button class="btn btn-primary btn-small" onclick="bookServiceModal(${service.id}, '${service.name}')">Book Service</button>
-                            <button class="btn btn-secondary btn-small" onclick="addServiceToCart(${service.id}, '${service.name}', ${service.price})">Add to Cart</button>
-                        </div>
-                    </div>
-                `;
-                container.innerHTML += serviceCard;
+                const serviceCard = document.createElement('article');
+                serviceCard.className = 'card';
+
+                const image = document.createElement('img');
+                image.className = 'card-image';
+                image.src = getServiceImageUrl(service);
+                image.alt = service.name;
+                serviceCard.appendChild(image);
+
+                const body = document.createElement('div');
+                body.className = 'card-body';
+                const title = document.createElement('h3');
+                title.className = 'card-title';
+                title.textContent = service.name;
+                body.appendChild(title);
+
+                const description = document.createElement('p');
+                description.className = 'card-text';
+                description.textContent = service.description.length > 100
+                    ? `${service.description.substring(0, 100)}...`
+                    : service.description;
+                body.appendChild(description);
+
+                const price = document.createElement('div');
+                price.className = 'card-price';
+                price.textContent = formatServiceCurrency(service.price);
+                body.appendChild(price);
+
+                const category = document.createElement('p');
+                category.className = 'text-muted';
+                category.textContent = `Category: ${service.category}`;
+                body.appendChild(category);
+                serviceCard.appendChild(body);
+
+                const footer = document.createElement('div');
+                footer.className = 'card-footer';
+                const bookButton = document.createElement('button');
+                bookButton.className = 'btn btn-primary btn-small';
+                bookButton.textContent = 'Book Service';
+                bookButton.addEventListener('click', () => openServiceBooking(service.id));
+                footer.appendChild(bookButton);
+
+                const cartButton = document.createElement('button');
+                cartButton.className = 'btn btn-secondary btn-small';
+                cartButton.textContent = 'Add to Cart';
+                cartButton.addEventListener('click', () => addServiceToCart(service.id, service.name, service.price));
+                footer.appendChild(cartButton);
+
+                serviceCard.appendChild(footer);
+                container.appendChild(serviceCard);
             });
         }
 
@@ -144,16 +189,37 @@
             }
         }
 
-        function bookServiceModal(serviceId, serviceName) {
-            showAlert('Service booking feature will be available soon!', 'info');
+        async function openServiceBooking(serviceId) {
+            const service = allServices.find(item => Number(item.id) === Number(serviceId));
+            if (!service) {
+                showAlert('This service is no longer available. Refresh the page and try again.', 'danger');
+                return;
+            }
+
+            const authResult = await checkAuth();
+            if (!authResult.success || !authResult.data || !authResult.data.logged_in) {
+                const returnTo = `booking.html?service_id=${encodeURIComponent(serviceId)}`;
+                window.location.href = `index.html?auth=login&return_to=${encodeURIComponent(returnTo)}`;
+                return;
+            }
+
+            window.location.href = `booking.html?service_id=${encodeURIComponent(serviceId)}`;
         }
 
-        // Event listeners
         document.getElementById('searchInput').addEventListener('input', filterServices);
         document.getElementById('categoryFilter').addEventListener('change', filterServices);
 
         // Load services on page load
-        loadServices();
+        async function loadServicesAndResumeBooking() {
+            await loadServices();
+            const params = new URLSearchParams(window.location.search);
+            const serviceId = params.get('book_service');
+            if (serviceId && /^\d+$/.test(serviceId)) {
+                await openServiceBooking(serviceId);
+            }
+        }
+
+        loadServicesAndResumeBooking();
     </script>
 </body>
 </html>

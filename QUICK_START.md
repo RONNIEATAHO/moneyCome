@@ -87,7 +87,6 @@ Frontend (Public)
 ├── contact.html         ← Contact form
 ├── cart.html            ← Shopping cart
 ├── payment.html         ← Payment processing
-├── login.html           ← Login/Register
 └── order-confirmation.html ← Order successful
 
 Backend (API)

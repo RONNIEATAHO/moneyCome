@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Confirmation - Suvan Ventures</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/styles.css?v=20261012-background">
 </head>
 <body>
     <!-- Navbar -->
     <nav class="navbar">
         <div class="container">
-            <div class="navbar-logo"><img src="images/sv.jpeg" alt="Suvan Ventures" style="height: 50px;"></div>
+            <div class="navbar-logo"><img src="images/sv.jpeg" alt="Suvan Ventures"></div>
             <ul class="navbar-menu">
                 <li><a href="index.html">Home</a></li>
                 <li><a href="products.html">Products</a></li>
@@ -18,7 +18,6 @@
                 <li><a href="contact.html">Contact</a></li>
             </ul>
             <div class="navbar-auth">
-                <a href="cart.html" class="navbar-icon" title="Cart">🛒</a>
             </div>
         </div>
     </nav>
@@ -89,7 +88,7 @@
 
             const auth = await checkAuth();
             if (!auth.data.logged_in) {
-                window.location.href = 'login.html';
+                window.location.href = 'index.html?auth=login';
                 return;
             }
 

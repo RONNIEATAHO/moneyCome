@@ -16,19 +16,61 @@ if ($method === 'POST' && $action === 'add_to_cart') {
     requireLogin();
     
     $user_id = $_SESSION['user_id'];
-    $product_id = isset($data['product_id']) ? (int)$data['product_id'] : null;
-    $service_id = isset($data['service_id']) ? (int)$data['service_id'] : null;
-    $quantity = (int)$data['quantity'];
-    $price = (float)$data['price'];
-    $type = $data['type']; // 'product' or 'service'
-    
-    $sql = "INSERT INTO cart (user_id, product_id, service_id, quantity, price, type) 
-            VALUES ($user_id, $product_id, $service_id, $quantity, $price, '$type')";
-    
-    if ($conn->query($sql)) {
+    $quantity = (int)($data['quantity'] ?? 0);
+    $type = $data['type'] ?? '';
+
+    if ($quantity < 1 || !in_array($type, ['product', 'service'], true)) {
+        sendJsonResponse(getErrorResponse('Invalid cart item or quantity'));
+    }
+
+    if ($type === 'product') {
+        $product_id = (int)($data['product_id'] ?? 0);
+        $product_result = $conn->query(
+            "SELECT price, discount_price, stock_quantity FROM products WHERE id = $product_id AND status = 'active'"
+        );
+        if (!$product_id || !$product_result || $product_result->num_rows === 0) {
+            sendJsonResponse(getErrorResponse('Product is unavailable'));
+        }
+
+        $product = $product_result->fetch_assoc();
+        if ($quantity > (int)$product['stock_quantity']) {
+            sendJsonResponse(getErrorResponse('Requested quantity exceeds available stock'));
+        }
+
+        $price = $product['discount_price'] !== null && (float)$product['discount_price'] > 0
+            ? (float)$product['discount_price']
+            : (float)$product['price'];
+        $statement = $conn->prepare(
+            "INSERT INTO cart (user_id, product_id, service_id, quantity, price, type) VALUES (?, ?, NULL, ?, ?, 'product')"
+        );
+        if (!$statement) {
+            sendJsonResponse(getErrorResponse('Unable to prepare cart item: ' . $conn->error));
+        }
+        $statement->bind_param('iiid', $user_id, $product_id, $quantity, $price);
+    } else {
+        $service_id = (int)($data['service_id'] ?? 0);
+        $service_result = $conn->query(
+            "SELECT price FROM services WHERE id = $service_id AND status = 'active'"
+        );
+        if (!$service_id || !$service_result || $service_result->num_rows === 0) {
+            sendJsonResponse(getErrorResponse('Service is unavailable'));
+        }
+
+        $service = $service_result->fetch_assoc();
+        $price = (float)$service['price'];
+        $statement = $conn->prepare(
+            "INSERT INTO cart (user_id, product_id, service_id, quantity, price, type) VALUES (?, NULL, ?, ?, ?, 'service')"
+        );
+        if (!$statement) {
+            sendJsonResponse(getErrorResponse('Unable to prepare cart item: ' . $conn->error));
+        }
+        $statement->bind_param('iiid', $user_id, $service_id, $quantity, $price);
+    }
+
+    if ($statement && $statement->execute()) {
         sendJsonResponse(getSuccessResponse(['cart_id' => $conn->insert_id]));
     } else {
-        sendJsonResponse(getErrorResponse('Failed to add to cart'));
+        sendJsonResponse(getErrorResponse('Failed to add to cart: ' . $statement->error));
     }
 }
 

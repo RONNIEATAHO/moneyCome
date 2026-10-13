@@ -8,8 +8,8 @@ $method = $_SERVER['REQUEST_METHOD'];
 $action = isset($_GET['action']) ? $_GET['action'] : '';
 
 if ($method === 'POST') {
-    $data = json_decode(file_get_contents("php://input"), true);
-    $action = $data['action'] ?? '';
+    $data = json_decode(file_get_contents("php://input"), true) ?? [];
+    $action = $data['action'] ?? $action;
 }
 
 if ($method === 'POST' && $action === 'login') {
@@ -50,6 +50,7 @@ elseif ($method === 'POST' && $action === 'register') {
 
 elseif ($method === 'POST' && $action === 'logout') {
     logoutUser();
+    sendJsonResponse(getSuccessResponse(['logged_out' => true]));
 }
 
 elseif ($method === 'GET' && $action === 'check_auth') {

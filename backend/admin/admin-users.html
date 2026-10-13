@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Users - Admin Panel</title>
-    <link rel="stylesheet" href="../../public/css/styles.css">
+    <link rel="stylesheet" href="../../public/css/styles.css?v=20261012-background">
     <style>
         .admin-container { display: grid; grid-template-columns: 250px 1fr; }
         .admin-sidebar { background-color: var(--primary-dark); color: var(--primary-light); padding: 2rem 0; position: fixed; left: 0; top: 0; width: 250px; height: 100vh; overflow-y: auto; }
@@ -62,7 +62,7 @@
         async function checkAdminAccess() {
             const auth = await checkAuth();
             if (!auth.data.logged_in || auth.data.user_role !== 'system_admin') {
-                window.location.href = '../../public/login.html';
+                window.location.href = '../../public/index.html?auth=login';
             }
         }
 

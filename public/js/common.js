@@ -1,27 +1,55 @@
 // Suvan Ventures - Common JavaScript Functions
-const API_BASE_URL = '../backend/api';
+const API_BASE_URL = window.location.pathname.includes('/backend/admin/')
+    ? '../api'
+    : '../backend/api';
 
 // API Helper Functions
 async function apiCall(endpoint, action, method = 'GET', data = null) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+
     try {
         const url = `${API_BASE_URL}/${endpoint}.php?action=${action}`;
         const options = {
             method: method,
-            headers: {
-                'Content-Type': 'application/json',
-            }
+            headers: {}
         };
 
-        if (data) {
-            options.body = JSON.stringify({ action, ...data });
+        if (method !== 'GET') {
+            if (data instanceof FormData) {
+                data.set('action', action);
+                options.body = data;
+            } else {
+                options.headers['Content-Type'] = 'application/json';
+                options.body = JSON.stringify({ action, ...(data || {}) });
+            }
         }
 
-        const response = await fetch(url, options);
-        const result = await response.json();
+        const response = await fetch(url, {
+            ...options,
+            cache: 'no-store',
+            signal: controller.signal
+        });
+        const responseText = await response.text();
+        let result;
+        try {
+            result = JSON.parse(responseText);
+        } catch (parseError) {
+            throw new Error(`API ${endpoint} returned HTTP ${response.status} with an invalid response.`);
+        }
+        if (!response.ok && result.success) {
+            result.success = false;
+            result.message = `API request failed with HTTP ${response.status}.`;
+        }
         return result;
     } catch (error) {
         console.error('API Error:', error);
-        return { success: false, message: 'Network error occurred' };
+        const message = error.name === 'AbortError'
+            ? `API request to ${endpoint} timed out.`
+            : error.message || 'Network error occurred';
+        return { success: false, message };
+    } finally {
+        clearTimeout(timeoutId);
     }
 }
 
@@ -37,7 +65,7 @@ async function registerUser(email, password, first_name, last_name, phone) {
 }
 
 async function logoutUser() {
-    return await apiCall('auth', 'logout', 'POST');
+    return await apiCall('auth', 'logout', 'POST', {});
 }
 
 async function checkAuth() {
@@ -55,6 +83,24 @@ async function updateProfile(data) {
 // Products Functions
 async function getAllProducts() {
     return await apiCall('products', 'get_all', 'GET');
+}
+
+async function getAllProductsForAdmin() {
+    return await apiCall('products', 'get_all_admin', 'GET');
+}
+
+function getProductImageUrl(product) {
+    if (product.image_url) {
+        return product.image_url;
+    }
+
+    const fallbackImages = [
+        'images/WhatsApp Image 2026-10-08 at 16.40.51 (1).jpeg',
+        'images/WhatsApp Image 2026-10-08 at 16.40.49 (1).jpeg',
+        'images/WhatsApp Image 2026-10-08 at 16.40.58 (1).jpeg'
+    ];
+    const productId = Number(product.id) || 0;
+    return fallbackImages[productId % fallbackImages.length];
 }
 
 async function getProduct(id) {
@@ -76,6 +122,24 @@ async function deleteProduct(id) {
 // Services Functions
 async function getAllServices() {
     return await apiCall('services', 'get_all', 'GET');
+}
+
+async function getAllServicesForAdmin() {
+    return await apiCall('services', 'get_all_admin', 'GET');
+}
+
+function getServiceImageUrl(service) {
+    if (service.image_url) {
+        return service.image_url;
+    }
+
+    const fallbackImages = [
+        'images/web.png',
+        'images/networkingSolutios.jpeg',
+        'images/securityCamera.jpeg'
+    ];
+    const serviceId = Number(service.id) || 0;
+    return fallbackImages[serviceId % fallbackImages.length];
 }
 
 async function getService(id) {
@@ -266,6 +330,14 @@ function formatCurrency(amount) {
     }).format(amount);
 }
 
+function formatServiceCurrency(amount) {
+    return new Intl.NumberFormat('en-UG', {
+        style: 'currency',
+        currency: 'UGX',
+        maximumFractionDigits: 0
+    }).format(amount);
+}
+
 function formatDate(dateString) {
     return new Date(dateString).toLocaleDateString('en-US', {
         year: 'numeric',
@@ -288,6 +360,16 @@ function formatDateTime(dateString) {
 async function initializeNavbar() {
     const auth = await checkAuth();
     const authContainer = document.querySelector('.navbar-auth');
+    if (!authContainer) return;
+
+    const isAdminPage = window.location.pathname.includes('/backend/admin/');
+    const isHomePage = /\/public\/(?:index\.html)?$/.test(window.location.pathname);
+    const cartLink = isAdminPage || isHomePage || !auth.data || !auth.data.logged_in ? '' : `
+        <a href="cart.html" class="navbar-cart-link" aria-label="View cart">
+            <span aria-hidden="true">🛒</span> Cart
+            <span class="navbar-cart-count" hidden>0</span>
+        </a>
+    `;
     
     if (auth.data && auth.data.logged_in) {
         const userRole = auth.data.user_role;
@@ -296,7 +378,7 @@ async function initializeNavbar() {
             ? '../backend/admin/admin-dashboard.html'
             : 'admin-dashboard.html';
         
-        let authHTML = `
+        let authHTML = `${cartLink}
             <span class="text-muted">${userName}</span>
         `;
         
@@ -312,18 +394,54 @@ async function initializeNavbar() {
         
         authContainer.innerHTML = authHTML;
     } else {
+        const homeHref = window.location.pathname.includes('/backend/admin/')
+            ? '../../public/index.html'
+            : 'index.html';
         authContainer.innerHTML = `
-            <a href="login.html" style="color: var(--primary-light);">Login</a>
-            <a href="login.html" style="color: var(--primary-light);">Sign Up</a>
+            ${cartLink}
+            <a href="${homeHref}?auth=login" style="color: var(--primary-light);">Login</a>
+            <a href="${homeHref}?auth=signup" style="color: var(--primary-light);">Sign Up</a>
         `;
+    }
+
+    if (auth.data && auth.data.logged_in) {
+        await refreshNavbarCartCount();
     }
 }
 
-async function logoutAndRedirect() {
-    await logoutUser();
-    const isAdminPage = window.location.pathname.includes('/backend/admin/');
-    window.location.href = isAdminPage ? '../../public/index.html' : 'index.html';
+async function refreshNavbarCartCount() {
+    const countBadge = document.querySelector('.navbar-cart-count');
+    if (!countBadge) return;
+
+    const result = await getCart();
+    if (!result.success || !result.data || !Array.isArray(result.data.items)) {
+        console.error('Unable to refresh cart count:', result.message || 'Invalid cart response');
+        return;
+    }
+
+    const itemCount = result.data.items.reduce((count, item) => count + Number(item.quantity || 0), 0);
+    countBadge.textContent = itemCount;
+    countBadge.hidden = itemCount === 0;
 }
+
+async function logoutAndRedirect() {
+    const result = await logoutUser();
+    if (!result.success) {
+        showAlert(result.message || 'Unable to sign out. Please try again.', 'danger');
+        return;
+    }
+
+    sessionStorage.clear();
+    const isAdminPage = window.location.pathname.includes('/backend/admin/');
+    const homeHref = isAdminPage ? '../../public/index.html' : 'index.html';
+    window.location.replace(homeHref);
+}
+
+window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+        window.location.reload();
+    }
+});
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', initializeNavbar);

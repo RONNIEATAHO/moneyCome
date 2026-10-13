@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Services - Admin Panel</title>
-    <link rel="stylesheet" href="../../public/css/styles.css">
+    <link rel="stylesheet" href="../../public/css/styles.css?v=20261012-background">
     <style>
         :root {
             --admin-dark: #191919;
@@ -360,25 +360,25 @@
         <div class="modal-content" style="max-width: 600px;">
             <button class="modal-close" onclick="closeServiceModal()">&times;</button>
             <h2 id="modalTitle">Add Service</h2>
-            <form id="serviceForm">
+            <form id="serviceForm" enctype="multipart/form-data">
                 <div class="form-group">
                     <label for="serviceName">Service Name</label>
-                    <input type="text" id="serviceName" required>
+                    <input type="text" id="serviceName" name="name" required>
                 </div>
 
                 <div class="form-group">
                     <label for="serviceDescription">Description</label>
-                    <textarea id="serviceDescription" required></textarea>
+                    <textarea id="serviceDescription" name="description" required></textarea>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label for="servicePrice">Price</label>
-                        <input type="number" id="servicePrice" step="0.01" required>
+                        <input type="number" id="servicePrice" name="price" min="0" step="0.01" required>
                     </div>
                     <div class="form-group">
                         <label for="serviceCategory">Category</label>
-                        <select id="serviceCategory" required>
+                        <select id="serviceCategory" name="category" required>
                             <option value="">Select category</option>
                             <option value="Website Development">Website Development</option>
                             <option value="Networking">Networking</option>
@@ -394,8 +394,10 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="serviceImage">Image URL</label>
-                    <input type="text" id="serviceImage">
+                    <label for="serviceImage">Service image (optional)</label>
+                    <input type="file" id="serviceImage" name="image" accept="image/*">
+                    <img id="serviceImagePreview" alt="Service image preview" hidden style="display: none; max-width: 180px; max-height: 120px; margin-top: 0.75rem; object-fit: cover;">
+                    <small id="serviceImageHint">Choose an image file to upload, or leave empty to use a default image.</small>
                 </div>
 
                 <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Save Service</button>
@@ -403,33 +405,78 @@
         </div>
     </div>
 
-    <script src="../../public/js/common.js"></script>
+    <script src="../../public/js/common.js?v=20261012-services"></script>
     <script>
         let currentServiceId = null;
 
-        async function loadServices() {
-            const result = await getAllServices();
-            const tbody = document.getElementById('servicesTable');
-            tbody.innerHTML = '';
+        async function getAllServicesForAdmin() {
+            return apiCall('services', 'get_all_admin', 'GET');
+        }
 
-            if (result.success && result.data) {
+        async function loadServices() {
+            const tbody = document.getElementById('servicesTable');
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center">Loading services...</td></tr>';
+            try {
+                const result = await getAllServicesForAdmin();
+                if (!result.success || !Array.isArray(result.data)) {
+                    throw new Error(result.message || 'The services API returned an invalid response.');
+                }
+                if (result.data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center">No services are currently saved.</td></tr>';
+                    return;
+                }
+
+                const rows = document.createDocumentFragment();
                 result.data.forEach(service => {
                     const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${service.id}</td>
-                        <td>${service.name}</td>
-                        <td>${service.category}</td>
-                        <td>${formatCurrency(service.price)}</td>
-                        <td><span class="badge ${service.status === 'active' ? 'badge-success' : 'badge-danger'}">${service.status}</span></td>
-                        <td>
-                            <button class="btn btn-primary btn-small" onclick="editService(${service.id}, '${service.name}', '${service.description}', ${service.price}, '${service.category}')">Edit</button>
-                            <button class="btn btn-danger btn-small" onclick="deleteService(${service.id})">Delete</button>
-                        </td>
-                    `;
-                    tbody.appendChild(row);
+                    [service.id, service.name, service.category, formatCurrency(service.price)].forEach(value => {
+                        const cell = document.createElement('td');
+                        cell.textContent = value;
+                        row.appendChild(cell);
+                    });
+
+                    const statusCell = document.createElement('td');
+                    const statusBadge = document.createElement('span');
+                    statusBadge.className = `badge ${service.status === 'active' ? 'badge-success' : 'badge-danger'}`;
+                    statusBadge.textContent = service.status;
+                    statusCell.appendChild(statusBadge);
+                    row.appendChild(statusCell);
+
+                    const actionsCell = document.createElement('td');
+                    const editButton = document.createElement('button');
+                    editButton.type = 'button';
+                    editButton.className = 'btn btn-primary btn-small';
+                    editButton.textContent = 'Edit';
+                    editButton.addEventListener('click', () => editService(service));
+                    actionsCell.appendChild(editButton);
+
+                    const statusButton = document.createElement('button');
+                    statusButton.type = 'button';
+                    statusButton.className = service.status === 'active'
+                        ? 'btn btn-danger btn-small'
+                        : 'btn btn-primary btn-small';
+                    statusButton.textContent = service.status === 'active' ? 'Deactivate' : 'Activate';
+                    statusButton.addEventListener('click', () => {
+                        if (service.status === 'active') {
+                            deleteService(service.id);
+                        } else {
+                            activateService(service.id);
+                        }
+                    });
+                    actionsCell.appendChild(statusButton);
+                    row.appendChild(actionsCell);
+                    rows.appendChild(row);
                 });
-            } else {
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center">No services found</td></tr>';
+                tbody.replaceChildren(rows);
+            } catch (error) {
+                console.error('Unable to load admin services:', error);
+                const row = document.createElement('tr');
+                const cell = document.createElement('td');
+                cell.colSpan = 6;
+                cell.className = 'text-center';
+                cell.textContent = error.message || 'Unable to load services.';
+                row.appendChild(cell);
+                tbody.replaceChildren(row);
             }
         }
 
@@ -438,16 +485,34 @@
             document.getElementById('modalTitle').textContent = 'Add Service';
             document.getElementById('serviceForm').reset();
             document.getElementById('serviceCategory').value = '';
+            document.getElementById('serviceImage').required = false;
+            document.getElementById('serviceImagePreview').hidden = true;
+            document.getElementById('serviceImagePreview').style.display = 'none';
+            document.getElementById('serviceImageHint').textContent = 'Choose an image file to upload, or leave empty to use a default image.';
             showModal('serviceModal');
         }
 
-        function editService(id, name, description, price, category) {
-            currentServiceId = id;
+        function editService(service) {
+            currentServiceId = service.id;
             document.getElementById('modalTitle').textContent = 'Edit Service';
-            document.getElementById('serviceName').value = name;
-            document.getElementById('serviceDescription').value = description;
-            document.getElementById('servicePrice').value = price;
-            document.getElementById('serviceCategory').value = category;
+            document.getElementById('serviceName').value = service.name;
+            document.getElementById('serviceDescription').value = service.description;
+            document.getElementById('servicePrice').value = service.price;
+            document.getElementById('serviceCategory').value = service.category;
+            document.getElementById('serviceImage').required = false;
+            document.getElementById('serviceImageHint').textContent = 'Choose a new image to replace the current one, or leave empty to keep it.';
+
+            const preview = document.getElementById('serviceImagePreview');
+            if (service.image_url) {
+                preview.src = /^https?:\/\//i.test(service.image_url)
+                    ? service.image_url
+                    : `../../public/${service.image_url}`;
+                preview.hidden = false;
+                preview.style.display = 'block';
+            } else {
+                preview.hidden = true;
+                preview.style.display = 'none';
+            }
             showModal('serviceModal');
         }
 
@@ -467,43 +532,62 @@
             }
         }
 
+        async function activateService(id) {
+            const result = await apiCall('services', 'activate_service', 'POST', { id });
+            if (result.success) {
+                showAlert('Service activated and visible to customers', 'success');
+                loadServices();
+            } else {
+                showAlert(result.message, 'danger');
+            }
+        }
+
+        document.getElementById('serviceImage').addEventListener('change', event => {
+            const file = event.target.files[0];
+            const preview = document.getElementById('serviceImagePreview');
+            if (!file) {
+                if (!currentServiceId) {
+                    preview.hidden = true;
+                    preview.style.display = 'none';
+                }
+                return;
+            }
+
+            preview.src = URL.createObjectURL(file);
+            preview.hidden = false;
+            preview.style.display = 'block';
+        });
+
         document.getElementById('serviceForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const formData = {
-                name: document.getElementById('serviceName').value,
-                description: document.getElementById('serviceDescription').value,
-                price: document.getElementById('servicePrice').value,
-                category: document.getElementById('serviceCategory').value,
-                image_url: document.getElementById('serviceImage').value
-            };
-
+            const action = currentServiceId ? 'update_service' : 'add_service';
+            const formData = new FormData(e.currentTarget);
+            formData.set('action', action);
             if (currentServiceId) {
-                formData.id = currentServiceId;
-                const result = await updateService(formData);
+                formData.set('id', currentServiceId);
+            }
+
+            try {
+                const result = await apiCall('services', action, 'POST', formData);
+
                 if (result.success) {
-                    showAlert('Service updated successfully', 'success');
+                    showAlert(currentServiceId ? 'Service updated successfully' : 'Service added successfully', 'success');
                     closeServiceModal();
-                    loadServices();
+                    await loadServices();
                 } else {
-                    showAlert(result.message, 'danger');
+                    showAlert(result.message || 'Unable to save service.', 'danger');
                 }
-            } else {
-                const result = await addService(formData);
-                if (result.success) {
-                    showAlert('Service added successfully', 'success');
-                    closeServiceModal();
-                    loadServices();
-                } else {
-                    showAlert(result.message, 'danger');
-                }
+            } catch (error) {
+                console.error('Service save failed:', error);
+                showAlert(error.message || 'Unable to save service. Please try again.', 'danger');
             }
         });
 
         async function checkAdminAccess() {
             const auth = await checkAuth();
             if (!auth.data.logged_in || (auth.data.user_role !== 'admin' && auth.data.user_role !== 'system_admin')) {
-                window.location.href = '../../login.html';
+                window.location.href = '../../public/index.html?auth=login';
             }
         }
 

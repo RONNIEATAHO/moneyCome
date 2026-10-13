@@ -28,7 +28,6 @@ moneyCome/
 │   ├── contact.html                 # Contact form
 │   ├── cart.html                    # Shopping cart
 │   ├── payment.html                 # Payment processing
-│   ├── login.html                   # Login/Register
 │   ├── css/
 │   │   └── styles.css               # Global styles
 │   ├── js/

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Products - Admin Panel</title>
-    <link rel="stylesheet" href="../../public/css/styles.css">
+    <link rel="stylesheet" href="../../public/css/styles.css?v=20261012-background">
     <style>
         :root {
             --admin-dark: #191919;
@@ -432,7 +432,7 @@
         let currentProductId = null;
 
         async function loadProducts() {
-            const result = await getAllProducts();
+            const result = await getAllProductsForAdmin();
             const tbody = document.getElementById('productsTable');
             tbody.innerHTML = '';
 
@@ -455,8 +455,23 @@
                     `;
                     tbody.appendChild(row);
                 });
+                if (result.data.length === 0) {
+                    const row = document.createElement('tr');
+                    const cell = document.createElement('td');
+                    cell.colSpan = 7;
+                    cell.className = 'text-center';
+                    cell.textContent = 'No products found';
+                    row.appendChild(cell);
+                    tbody.appendChild(row);
+                }
             } else {
-                tbody.innerHTML = '<tr><td colspan="7" class="text-center">No products found</td></tr>';
+                const row = document.createElement('tr');
+                const cell = document.createElement('td');
+                cell.colSpan = 7;
+                cell.className = 'text-center';
+                cell.textContent = result.success ? 'No products found' : result.message || 'Unable to load products.';
+                row.appendChild(cell);
+                tbody.appendChild(row);
             }
         }
 
@@ -570,7 +585,7 @@
         async function checkAdminAccess() {
             const auth = await checkAuth();
             if (!auth.data.logged_in || (auth.data.user_role !== 'admin' && auth.data.user_role !== 'system_admin')) {
-                window.location.href = '../../public/login.html';
+                window.location.href = '../../public/index.html?auth=login';
             }
         }
 
