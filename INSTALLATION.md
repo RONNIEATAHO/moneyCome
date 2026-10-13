@@ -120,10 +120,13 @@ cp backend/config/env.example.php backend/config/env.php
 4. Verify items display correctly
 
 ### 5. Test Admin Panel
-1. Login as admin
+1. Login as the system admin
 2. Navigate to admin dashboard
-3. Test product and service management
-4. View inquiries and appointments
+3. Use the **Users** page to create admin accounts and deactivate or reactivate customer and regular admin accounts.
+4. Test product and service management
+5. View inquiries and appointments
+
+Regular admins can use the other admin features and view users, but only the system admin can create admin accounts or deactivate customer and regular admin accounts. Customer self-registration does not grant admin privileges. Deactivation blocks future logins without deleting the account's orders or other records. The system admin cannot deactivate their own account or another system admin.
 
 ## Database Information
 
@@ -142,6 +145,8 @@ cp backend/config/env.example.php backend/config/env.php
 System Admin: admin@suvanventures.com / admin123
 Company Admin: company@suvanventures.com / company123
 ```
+
+These credentials are for local testing only. Change both passwords immediately after importing the schema, and never use the defaults on a public server.
 
 ## Troubleshooting
 

@@ -7,7 +7,34 @@ header('Expires: 0');
 
 // Function to check if user is logged in
 function isLoggedIn() {
-    return isset($_SESSION['user_id']);
+    if (!isset($_SESSION['user_id'])) {
+        return false;
+    }
+
+    global $conn;
+    $statement = $conn->prepare("SELECT role, status FROM users WHERE id = ?");
+    if (!$statement) {
+        throw new RuntimeException('Unable to verify account status');
+    }
+    $statement->bind_param('i', $_SESSION['user_id']);
+    if (!$statement->execute()) {
+        throw new RuntimeException('Unable to verify account status');
+    }
+    if (!$statement->bind_result($role, $status)) {
+        throw new RuntimeException('Unable to verify account status');
+    }
+    $fetch_result = $statement->fetch();
+    if ($fetch_result === false) {
+        throw new RuntimeException('Unable to verify account status');
+    }
+    if ($fetch_result === null || $status !== 'active') {
+        $statement->close();
+        logoutUser();
+        return false;
+    }
+    $statement->close();
+    $_SESSION['user_role'] = $role;
+    return true;
 }
 
 // Function to check user role
@@ -20,12 +47,18 @@ function userHasRole($required_role) {
 
 // Function to check if user is admin or system admin
 function isAdmin() {
+    if (!isLoggedIn()) {
+        return false;
+    }
     return isset($_SESSION['user_role']) && 
            ($_SESSION['user_role'] === 'admin' || $_SESSION['user_role'] === 'system_admin');
 }
 
 // Function to check if user is system admin
 function isSystemAdmin() {
+    if (!isLoggedIn()) {
+        return false;
+    }
     return isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'system_admin';
 }
 

@@ -37,6 +37,8 @@ define('DB_NAME', 'suvan_ventures');
 1. Login as admin
 2. Click on "Admin Panel" link in navbar
 3. Access: `http://localhost/moneyCome/backend/admin/admin-dashboard.html`
+4. Open **Users** as the system admin to create admin accounts and deactivate or reactivate customer and regular admin accounts.
+5. Regular admins can view users but cannot create admin accounts or deactivate accounts.
 
 ## 📋 Default Test Accounts
 
@@ -111,10 +113,13 @@ Admin Panel
 ## ⚠️ Important Notes
 
 1. **Database**: The database will be created with default admin and company admin users.
-2. **Passwords**: Currently using SHA256 hashing. Consider upgrading to bcrypt for production.
-3. **Payment Gateway**: Payment integration is simulated. Update with real payment provider APIs for production.
-4. **Email**: No email notifications configured. Add SMTP settings in production.
-5. **Security**: Use HTTPS in production and implement additional security measures.
+2. **Default passwords**: Change both seeded account passwords immediately after a fresh installation. Do not use the published defaults on a public server.
+3. **Passwords**: Currently using SHA256 hashing. Consider upgrading to bcrypt for production.
+4. **Admin accounts**: Public registration only creates customer accounts. The system admin creates admin accounts from the Users page.
+5. **Account removal**: Super admins deactivate customer or regular admin accounts; their order and account records remain in the database.
+6. **Payment Gateway**: Payment integration is simulated. Update with real payment provider APIs for production.
+7. **Email**: No email notifications configured. Add SMTP settings in production.
+8. **Security**: Use HTTPS in production and implement additional security measures.
 
 ## 🛠️ Troubleshooting
 
