@@ -121,7 +121,7 @@ elseif ($method === 'POST' && $action === 'add_service') {
         sendJsonResponse(getErrorResponse('Enter a service name, description, non-negative price, and category.'));
     }
     
-    $sql = "INSERT INTO services (name, description, price, category, image_url, status) 
+    $sql = "INSERT INTO services (name, description, price, category, image_url, status)
             VALUES ('$name', '$description', $price, '$category', '$image_url', 'active')";
     
     if ($conn->query($sql)) {
