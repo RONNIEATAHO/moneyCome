@@ -166,7 +166,11 @@ async function addToCart(type, itemId, quantity, price) {
     } else {
         data.service_id = itemId;
     }
-    return await apiCall('cart', 'add_to_cart', 'POST', data);
+    const result = await apiCall('cart', 'add_to_cart', 'POST', data);
+    if (result.success) {
+        await refreshNavbarCartCount();
+    }
+    return result;
 }
 
 async function getCart() {
@@ -292,14 +296,35 @@ async function getAllUsers() {
 
 // DOM Helper Functions
 function showAlert(message, type = 'success') {
-    const alertDiv = document.createElement('div');
-    alertDiv.className = `alert alert-${type}`;
-    alertDiv.textContent = message;
-    document.body.insertBefore(alertDiv, document.body.firstChild);
-    
-    setTimeout(() => {
-        alertDiv.remove();
-    }, 5000);
+    const allowedTypes = ['success', 'danger', 'warning', 'info'];
+    const alertType = allowedTypes.includes(type) ? type : 'info';
+    const toast = document.createElement('div');
+    toast.className = `app-toast app-toast-${alertType}`;
+    toast.setAttribute('role', alertType === 'danger' ? 'alert' : 'status');
+    toast.setAttribute('aria-live', alertType === 'danger' ? 'assertive' : 'polite');
+
+    const messageText = document.createElement('span');
+    messageText.className = 'app-toast-message';
+    messageText.textContent = message;
+
+    const dismissButton = document.createElement('button');
+    dismissButton.className = 'app-toast-dismiss';
+    dismissButton.type = 'button';
+    dismissButton.setAttribute('aria-label', 'Dismiss notification');
+    dismissButton.textContent = '×';
+    dismissButton.addEventListener('click', () => toast.remove());
+
+    toast.append(messageText, dismissButton);
+    let toastContainer = document.getElementById('app-toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'app-toast-container';
+        toastContainer.setAttribute('aria-label', 'Notifications');
+        document.body.appendChild(toastContainer);
+    }
+    toastContainer.appendChild(toast);
+
+    window.setTimeout(() => toast.remove(), 5000);
 }
 
 function showModal(modalId) {
@@ -358,10 +383,56 @@ function formatDateTime(dateString) {
 
 // Initialize Navbar
 async function initializeNavbar() {
-    const auth = await checkAuth();
     const authContainer = document.querySelector('.navbar-auth');
     if (!authContainer) return;
 
+    const navbar = authContainer.closest('.navbar');
+    const menu = navbar && navbar.querySelector('.navbar-menu');
+    const logo = navbar && navbar.querySelector('.navbar-logo');
+    if (navbar && menu && logo && !navbar.querySelector('.navbar-toggle')) {
+        if (!menu.id) menu.id = 'primary-navigation';
+        if (!authContainer.id) authContainer.id = 'navbar-account-links';
+        if (!menu.hasAttribute('aria-label')) menu.setAttribute('aria-label', 'Main navigation');
+
+        const toggle = document.createElement('button');
+        toggle.className = 'navbar-toggle';
+        toggle.type = 'button';
+        toggle.setAttribute('aria-label', 'Open navigation menu');
+        toggle.setAttribute('aria-expanded', 'false');
+        toggle.setAttribute('aria-controls', `${menu.id} ${authContainer.id}`);
+        toggle.textContent = '☰ Menu';
+
+        logo.insertAdjacentElement('afterend', toggle);
+
+        const closeMenu = () => {
+            navbar.classList.remove('is-open');
+            toggle.setAttribute('aria-expanded', 'false');
+            toggle.setAttribute('aria-label', 'Open navigation menu');
+            toggle.textContent = '☰ Menu';
+        };
+
+        toggle.addEventListener('click', () => {
+            const isOpen = navbar.classList.toggle('is-open');
+            toggle.setAttribute('aria-expanded', String(isOpen));
+            toggle.setAttribute('aria-label', `${isOpen ? 'Close' : 'Open'} navigation menu`);
+            toggle.textContent = isOpen ? '✕ Close' : '☰ Menu';
+        });
+
+        navbar.addEventListener('click', (event) => {
+            if (event.target.closest('.navbar-menu a, .navbar-auth a')) {
+                closeMenu();
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && navbar.classList.contains('is-open')) {
+                closeMenu();
+                toggle.focus();
+            }
+        });
+    }
+
+    const auth = await checkAuth();
     const isAdminPage = window.location.pathname.includes('/backend/admin/');
     const isHomePage = /\/public\/(?:index\.html)?$/.test(window.location.pathname);
     const cartLink = isAdminPage || isHomePage || !auth.data || !auth.data.logged_in ? '' : `
@@ -372,6 +443,16 @@ async function initializeNavbar() {
     `;
     
     if (auth.data && auth.data.logged_in) {
+        if (!isAdminPage && !navbar.querySelector('.navbar-cart-shortcut')) {
+            const cartShortcut = document.createElement('a');
+            cartShortcut.className = 'navbar-cart-shortcut';
+            cartShortcut.href = 'cart.html';
+            cartShortcut.setAttribute('aria-label', 'View shopping cart');
+            cartShortcut.hidden = true;
+            cartShortcut.innerHTML = '<span aria-hidden="true">🛒</span><span>Cart</span><span class="navbar-cart-count" hidden>0</span>';
+            navbar.querySelector('.navbar-logo').insertAdjacentElement('afterend', cartShortcut);
+        }
+
         const userRole = auth.data.user_role;
         const userName = auth.data.user_name;
         const adminHref = window.location.pathname.includes('/public/')
@@ -384,7 +465,7 @@ async function initializeNavbar() {
         
         if (userRole === 'admin' || userRole === 'system_admin') {
             authHTML += `
-                <a href="${adminHref}" class="navbar-menu" style="display: inline;">Admin Panel</a>
+                <a href="${adminHref}" class="navbar-admin-link">Admin Panel</a>
             `;
         }
         
@@ -410,8 +491,8 @@ async function initializeNavbar() {
 }
 
 async function refreshNavbarCartCount() {
-    const countBadge = document.querySelector('.navbar-cart-count');
-    if (!countBadge) return;
+    const countBadges = document.querySelectorAll('.navbar-cart-count');
+    if (countBadges.length === 0) return;
 
     const result = await getCart();
     if (!result.success || !result.data || !Array.isArray(result.data.items)) {
@@ -420,8 +501,13 @@ async function refreshNavbarCartCount() {
     }
 
     const itemCount = result.data.items.reduce((count, item) => count + Number(item.quantity || 0), 0);
-    countBadge.textContent = itemCount;
-    countBadge.hidden = itemCount === 0;
+    countBadges.forEach((countBadge) => {
+        countBadge.textContent = itemCount;
+        countBadge.hidden = itemCount === 0;
+    });
+    document.querySelectorAll('.navbar-cart-shortcut').forEach((shortcut) => {
+        shortcut.hidden = itemCount === 0;
+    });
 }
 
 async function logoutAndRedirect() {

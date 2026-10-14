@@ -91,6 +91,10 @@ a:hover {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+.navbar-toggle {
+    display: none;
+}
+
 .navbar .container {
     display: flex;
     justify-content: space-between;
@@ -133,10 +137,23 @@ a:hover {
     font-weight: 600;
 }
 
+.navbar-menu a.active {
+    color: var(--primary-gold-light);
+    font-weight: 700;
+}
+
 .navbar-auth {
     display: flex;
     gap: 1rem;
     align-items: center;
+}
+
+.navbar-auth .text-muted {
+    color: rgba(255, 255, 255, 0.72);
+}
+
+.navbar-admin-link {
+    color: var(--primary-light);
 }
 
 .navbar-icon {
@@ -178,6 +195,19 @@ a:hover {
 
 .navbar-cart-count[hidden] {
     display: none;
+}
+
+.navbar-cart-shortcut {
+    display: none;
+}
+
+.navbar-cart-shortcut[hidden] {
+    display: none;
+}
+
+.navbar-cart-shortcut:focus-visible {
+    outline: 3px solid var(--primary-gold-light);
+    outline-offset: 2px;
 }
 
 /* Container */
@@ -800,6 +830,9 @@ input[type="phone"],
 input[type="date"],
 input[type="time"],
 input[type="number"],
+input[type="tel"],
+input[type="datetime-local"],
+input[type="search"],
 textarea,
 select {
     width: 100%;
@@ -818,6 +851,9 @@ input[type="phone"]:focus,
 input[type="date"]:focus,
 input[type="time"]:focus,
 input[type="number"]:focus,
+input[type="tel"]:focus,
+input[type="datetime-local"]:focus,
+input[type="search"]:focus,
 textarea:focus,
 select:focus {
     outline: none;
@@ -878,6 +914,80 @@ textarea {
     background-color: #d1ecf1;
     border-color: #17a2b8;
     color: #0c5460;
+}
+
+.app-toast-container {
+    position: fixed;
+    top: max(1rem, env(safe-area-inset-top));
+    right: max(1rem, env(safe-area-inset-right));
+    z-index: 4000;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.75rem;
+    width: min(420px, calc(100vw - 2rem));
+    pointer-events: none;
+}
+
+.app-toast {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    padding: 1rem 1rem 1rem 1.1rem;
+    border: 1px solid rgba(25, 25, 25, 0.12);
+    border-left: 5px solid #17a2b8;
+    border-radius: 10px;
+    background: #fff;
+    color: var(--text-dark);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.22);
+    animation: toast-enter 180ms ease-out;
+    pointer-events: auto;
+}
+
+.app-toast-success { border-left-color: var(--success); }
+.app-toast-danger { border-left-color: var(--danger); }
+.app-toast-warning { border-left-color: var(--warning); }
+.app-toast-info { border-left-color: #17a2b8; }
+
+.app-toast-message {
+    flex: 1;
+    overflow-wrap: anywhere;
+}
+
+.app-toast-dismiss {
+    flex: 0 0 36px;
+    width: 36px;
+    height: 36px;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text-light);
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.app-toast-dismiss:hover {
+    background: rgba(25, 25, 25, 0.08);
+    color: var(--primary-dark);
+}
+
+@keyframes toast-enter {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 560px) {
+    .app-toast-container {
+        top: max(0.65rem, env(safe-area-inset-top));
+        right: max(0.65rem, env(safe-area-inset-right));
+        width: calc(100vw - 1.3rem);
+    }
+
+    .app-toast {
+        padding: 0.85rem;
+    }
 }
 
 /* Footer */
@@ -1470,12 +1580,120 @@ body.booking-page .hero .container {
 }
 
 @media (max-width: 768px) {
-    .navbar-menu {
-        gap: 1rem;
+    body {
+        background-attachment: scroll;
+    }
+
+    .navbar {
+        padding: 0.65rem 0;
+    }
+
+    .navbar .container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 0.6rem;
+    }
+
+    .navbar-logo {
+        margin-right: auto;
+    }
+
+    .navbar-logo img {
+        height: 42px;
+    }
+
+    .navbar-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 92px;
+        min-height: 44px;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid rgba(247, 200, 115, 0.45);
+        border-radius: 6px;
+        background: transparent;
+        color: var(--primary-light);
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .navbar-cart-shortcut {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        min-height: 44px;
+        padding: 0.5rem 0.65rem;
+        border: 1px solid rgba(247, 200, 115, 0.45);
+        border-radius: 6px;
+        color: var(--primary-light);
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .navbar-cart-shortcut[hidden] {
+        display: none;
+    }
+
+    .navbar-cart-shortcut:hover {
+        color: var(--primary-gold-light);
+    }
+
+    .navbar-toggle:focus-visible {
+        outline: 3px solid var(--primary-gold-light);
+        outline-offset: 2px;
+    }
+
+    .navbar-menu,
+    .navbar-auth {
+        display: none;
+        flex: 0 0 100%;
+        width: 100%;
+    }
+
+    .navbar.is-open .navbar-menu {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        padding: 0.35rem 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    .navbar.is-open .navbar-menu a {
+        display: flex;
+        align-items: center;
+        min-height: 44px;
+        padding: 0.5rem 0.25rem;
+    }
+
+    .navbar.is-open .navbar-auth {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem 1rem;
+        padding: 0.75rem 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    .navbar-auth a,
+    .navbar-auth button {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
     }
 
     .home-catalog-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .grid.col-2 {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .grid.col-4,
+    .featured-product-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
     
     .hero {
@@ -1490,6 +1708,59 @@ body.booking-page .hero .container {
 }
 
 @media (max-width: 560px) {
+    .container {
+        padding-right: 0.875rem;
+        padding-left: 0.875rem;
+    }
+
+    .section {
+        padding: 2.5rem 0;
+    }
+
+    .section-title {
+        margin-bottom: 1.75rem;
+        font-size: 1.55rem;
+    }
+
+    .hero h1 {
+        font-size: clamp(1.7rem, 8vw, 2.2rem);
+    }
+
+    .hero .container > p {
+        font-size: 0.95rem;
+    }
+
+    .hero-actions {
+        gap: 0.65rem;
+        margin: 1.25rem 0;
+    }
+
+    .hero-actions .btn {
+        flex: 1 1 145px;
+        padding-right: 0.9rem;
+        padding-left: 0.9rem;
+    }
+
+    .hero-metrics {
+        justify-content: space-around;
+        gap: 0.75rem;
+    }
+
+    .hero-metrics div {
+        min-width: 0;
+        flex: 1 1 90px;
+    }
+
+    .image-stack {
+        height: 250px;
+    }
+
+    .grid.col-2,
+    .grid.col-4,
+    .featured-product-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
     .home-catalog-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 0.75rem;
@@ -1505,6 +1776,75 @@ body.booking-page .hero .container {
 
     .home-catalog-title {
         font-size: 0.9rem;
+    }
+
+    .grid.product-grid {
+        grid-template-columns: minmax(0, 1fr);
+        justify-content: stretch;
+    }
+
+    .product-card {
+        max-width: none;
+    }
+
+    .products-toolbar {
+        gap: 0.65rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .products-toolbar input,
+    .products-toolbar select {
+        min-width: 100%;
+    }
+
+    .form-row {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0;
+    }
+
+    .section form > .btn,
+    .section form > button {
+        width: 100%;
+    }
+
+    .btn {
+        min-height: 44px;
+    }
+
+    .booking-detail-card .card-body,
+    .booking-form-card .card-body,
+    .card-body {
+        padding: 1.1rem;
+    }
+
+    .booking-payment-methods {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+.cart-table-wrap {
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+}
+
+.cart-table-wrap table {
+    min-width: 620px;
+}
+
+@media (max-width: 380px) {
+    .home-catalog-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .home-catalog-image {
+        height: 170px;
+    }
+
+    .navbar .container {
+        padding-right: 0.75rem;
+        padding-left: 0.75rem;
     }
 }
 

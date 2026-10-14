@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shopping Cart - Suvan Ventures</title>
-    <link rel="stylesheet" href="css/styles.css?v=20261012-background">
+    <link rel="stylesheet" href="css/styles.css?v=20261013-admin-feedback">
 </head>
 <body>
     <!-- Navbar -->
@@ -42,20 +42,22 @@
                     <!-- Cart Items -->
                     <div>
                         <h2>Cart Items</h2>
-                        <table style="width: 100%; border-collapse: collapse;">
-                            <thead>
-                                <tr style="border-bottom: 2px solid var(--primary-gold);">
-                                    <th style="text-align: left; padding: 1rem;">Product/Service</th>
-                                    <th style="text-align: center; padding: 1rem;">Qty</th>
-                                    <th style="text-align: right; padding: 1rem;">Price</th>
-                                    <th style="text-align: right; padding: 1rem;">Total</th>
-                                    <th style="text-align: center; padding: 1rem;">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="cartItems">
-                                <!-- Items will be loaded here -->
-                            </tbody>
-                        </table>
+                        <div class="cart-table-wrap">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="border-bottom: 2px solid var(--primary-gold);">
+                                        <th style="text-align: left; padding: 1rem;">Product/Service</th>
+                                        <th style="text-align: center; padding: 1rem;">Qty</th>
+                                        <th style="text-align: right; padding: 1rem;">Price</th>
+                                        <th style="text-align: right; padding: 1rem;">Total</th>
+                                        <th style="text-align: center; padding: 1rem;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cartItems">
+                                    <!-- Items will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
                         <div id="emptyCart" style="text-align: center; padding: 2rem;">
                             <p style="font-size: 1.1rem; color: var(--text-light);">Your cart is empty</p>
                             <a href="products.html" class="btn btn-primary mt-2">Continue Shopping</a>
@@ -117,7 +119,7 @@
         </div>
     </footer>
 
-    <script src="js/common.js"></script>
+    <script src="js/common.js?v=20261013-admin-feedback"></script>
     <script>
         async function loadCart() {
             const auth = await checkAuth();

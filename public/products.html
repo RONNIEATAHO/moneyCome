@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Products - Suvan Ventures</title>
-    <link rel="stylesheet" href="css/styles.css?v=20261012-background">
+    <link rel="stylesheet" href="css/styles.css?v=20261013-admin-feedback">
 </head>
 <body>
     <!-- Navbar -->
@@ -68,7 +68,7 @@
         </div>
     </footer>
 
-    <script src="js/common.js"></script>
+    <script src="js/common.js?v=20261013-admin-feedback"></script>
     <script>
         let allProducts = [];
         let activeCategory = '';
@@ -222,7 +222,6 @@
             );
             if (result.success) {
                 showAlert(`${product.name} added to cart!`, 'success');
-                await refreshNavbarCartCount();
             } else {
                 showAlert(result.message || 'Unable to add this product to your cart.', 'danger');
             }
